@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add an optional, initially unselected FOMOD upgrade step with the legacy save converter, drag-and-drop launcher and player FAQ for eligible 3.5.2 saves.
+
 ### Offline legacy-save fix mode
 - Add a player-oriented one-save fix command for qualifying IntelEngine 3.5.2 serialization, accepting co-save runtimes 1.6.1170.0 and 1.7.104.0 only. It is an offline format/runtime gate, not a claim that all legacy saves qualify.
 - Offline checks passed: both preserved original pairs reproduced their verified converted co-saves byte-for-byte through the production fix entry with a no-game test predicate; original ESS and source metadata remained unchanged. Real Inja/production-codec smoke passed on all three templates, including legacy percent substitutions and encoded literal preservation. The shipped CLI correctly refused while Skyrim was running; closed-game CLI success was not exercised. Migration/codec, refusal, backup-locking, incomplete-publication and Unicode/single-file launcher checks passed.

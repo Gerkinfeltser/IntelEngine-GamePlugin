@@ -37,6 +37,38 @@ Requirements: SKSE, SkyrimNet Beta 25 or newer, PapyrusExtender (po3), PapyrusUt
                 </group>
             </optionalFileGroups>
         </installStep>
+        <installStep name="Upgrading from 3.5.2">
+            <optionalFileGroups order="Explicit">
+                <group name="Upgrade tools" type="SelectAny">
+                    <plugins order="Explicit">
+                        <plugin name="Legacy save converter and FAQ">
+                            <description>Continuing an IntelEngine 3.5.2 playthrough? Select this to install the converter and player FAQ in Data\IntelEngine Tools. Starting a fresh game? You do not need conversion. This option is unselected by default because only players bringing an eligible 3.5.2 save forward need these tools.
+
+1. Close Skyrim.
+2. Back up the matching .ess and .skse files and keep them together in the same folder. Back up IntelEngine and SkyrimNet's extra data too if you might roll back.
+3. Drag exactly one .ess onto Convert-IE-Save.bat in IntelEngine Tools; leave its matching .skse beside the save.
+4. After successful conversion, install this release's complete package and load the new _IEconverted save with its matching _IEconverted.skse alongside it.
+
+Skyrim 1.6.1170 and 1.7.104 only; VR saves are not convertible. The tool refuses saves it cannot qualify and cannot recover already-lost names. It leaves your originals untouched. Do not load an incomplete converted pair, mix original and converted files, or convert the same save again. Never load a converted save with IntelEngine 3.5.2.
+
+If your save folder is a link or junction (including redirected or OneDrive folders), copy the .ess/.skse pair to a normal folder first and drag the .ess from there.
+
+Windows SmartScreen may warn because the tool is unsigned: choose More info -&gt; Run anyway.
+
+Read FAQ.md in IntelEngine Tools for more guidance.</description>
+                            <files>
+                                <file source="IntelEngine Tools\LegacyCacheMigration.exe" destination="IntelEngine Tools\LegacyCacheMigration.exe" />
+                                <file source="IntelEngine Tools\Convert-IE-Save.bat" destination="IntelEngine Tools\Convert-IE-Save.bat" />
+                                <file source="FAQ.md" destination="IntelEngine Tools\FAQ.md" />
+                            </files>
+                            <typeDescriptor>
+                                <type name="Optional"/>
+                            </typeDescriptor>
+                        </plugin>
+                    </plugins>
+                </group>
+            </optionalFileGroups>
+        </installStep>
     </installSteps>
 
 </config>
