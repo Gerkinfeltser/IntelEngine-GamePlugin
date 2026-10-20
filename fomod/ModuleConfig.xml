@@ -44,12 +44,7 @@ Player FAQ: Data\IntelEngine Tools\FAQ.md</description>
                 <group name="Upgrade tools" type="SelectAny">
                     <plugins order="Explicit">
                         <plugin name="Legacy save converter">
-                            <description>Continuing a playthrough from IntelEngine 3.5.2 or earlier? Tick this, then after installing:
-1. Close Skyrim and back up the save's .ess and .skse.
-2. Drag the .ess onto Convert-IE-Save.bat in Data\IntelEngine Tools (MO2: right-click IntelEngine → Open in Explorer).
-3. Load the new _IEconverted save.
-
-Starting a new game? Skip this. Limits, warnings and troubleshooting: FAQ.md in the same folder.</description>
+                            <description>Playthrough from IntelEngine 3.5.2 or earlier? Tick this. After installing: close Skyrim, back up the save's .ess and .skse, drag the .ess onto Convert-IE-Save.bat in Data\IntelEngine Tools (MO2: right-click IntelEngine → Open in Explorer), then load the new _IEconverted save. New game? Skip this. Help and warnings: FAQ.md in the same folder.</description>
                             <files>
                                 <file source="IntelEngine Tools\LegacyCacheMigration.exe" destination="IntelEngine Tools\LegacyCacheMigration.exe" />
                                 <file source="IntelEngine Tools\Convert-IE-Save.bat" destination="IntelEngine Tools\Convert-IE-Save.bat" />
