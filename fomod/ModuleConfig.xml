@@ -20,7 +20,8 @@
                 <group name="Install" type="SelectAll">
                     <plugins order="Explicit">
                         <plugin name="IntelEngine">
-                            <description>AI-powered NPC autonomy mod for Skyrim. Gives NPCs the ability to travel, perform tasks, and create dynamic story events powered by SkyrimNet's LLM integration.
+                            <description>AI-powered NPC autonomy mod for Skyrim, powered by SkyrimNet's LLM integration.
+Player FAQ: Data\IntelEngine Tools\FAQ.md
 
 Features:
 - Player-directed NPC tasks (GoToLocation, FetchPerson, DeliverMessage, SearchForActor, ScheduleMeeting, EscortTarget)
@@ -28,8 +29,14 @@ Features:
 - Autonomous NPC social interactions (npc_interaction, npc_gossip)
 - All features configurable via MCM
 
-Requirements: SKSE, SkyrimNet Beta 25 or newer, PapyrusExtender (po3), PapyrusUtil, MCM Helper
-Player FAQ: Data\IntelEngine Tools\FAQ.md</description>
+Requirements:
+- SKSE
+- SkyrimNet Beta 25 or newer
+- PapyrusExtender (po3)
+- PapyrusUtil
+- MCM Helper
+- Papyrus MessageBox - SKSE NG (Skyrim 1.6 and earlier)
+  OR PapyrusMessageBox-1.7.104 (Skyrim 1.7)</description>
                             <files />
                             <typeDescriptor>
                                 <type name="Required"/>
@@ -44,7 +51,14 @@ Player FAQ: Data\IntelEngine Tools\FAQ.md</description>
                 <group name="Upgrade tools" type="SelectAny">
                     <plugins order="Explicit">
                         <plugin name="Legacy save converter">
-                            <description>Playthrough from IntelEngine 3.5.2 or earlier? Tick this. After installing: close Skyrim, back up the save's .ess and .skse, drag the .ess onto Convert-IE-Save.bat in Data\IntelEngine Tools (MO2: right-click IntelEngine → Open in Explorer), then load the new _IEconverted save. New game? Skip this. Help and warnings: FAQ.md in the same folder.</description>
+                            <description>New game? Skip this!
+Playthrough from IntelEngine 3.5.2 or earlier? Tick "Legacy save converter".
+Help and warnings: FAQ.md in the "IntelEngine Tools" folder.
+
+After installing:
+1. Close Skyrim and back up the save's .ess and .skse.
+2. Drag the .ess onto Convert-IE-Save.bat in "IntelEngine Tools" (MO2: right-click IntelEngine → Open in Explorer).
+3. Start Skyrim and load the new "..._IEconverted" save.</description>
                             <files>
                                 <file source="IntelEngine Tools\LegacyCacheMigration.exe" destination="IntelEngine Tools\LegacyCacheMigration.exe" />
                                 <file source="IntelEngine Tools\Convert-IE-Save.bat" destination="IntelEngine Tools\Convert-IE-Save.bat" />
