@@ -34,7 +34,7 @@ Requirements:
 - SkyrimNet Beta 25 or newer
 - PapyrusExtender (po3)
 - PapyrusUtil
-- MCM Helper
+- SkyUI (MCM)
 - Papyrus MessageBox - SKSE NG (Skyrim 1.6 and earlier)
   OR PapyrusMessageBox-1.7.104 (Skyrim 1.7)</description>
                             <files />
