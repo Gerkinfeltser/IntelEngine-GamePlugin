@@ -212,7 +212,7 @@ See the [Game changelog](CHANGELOG.md#unreleased) and [native compatibility note
 
 Yes — if you're continuing a playthrough from IntelEngine 3.5.2 or earlier, run the included converter first to preserve surviving names. Tested on 3.5.2 saves; saves from older versions convert if their format matches and are refused otherwise. Starting a fresh game? You can skip this.
 
-Find IntelEngine Tools in your installed mod: in MO2, right-click IntelEngine → Open in Explorer, then open IntelEngine Tools. In Vortex, open your game's Data folder, then IntelEngine Tools. The FAQ installs for everyone; select Legacy save converter in the installer if you need the executable and launcher.
+Find the IntelEngineTools folder in your installed mod: in MO2, right-click IntelEngine → Open in Explorer. In Vortex, it's in your game's Data folder. The FAQ installs for everyone; select Legacy save converter in the installer if you need the executable and launcher.
 
 1. Close Skyrim.
 2. Back up your save's matching `.ess` and `.skse` files and keep them together in the same folder; back up IntelEngine and SkyrimNet's extra data too if you might roll back.

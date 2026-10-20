@@ -11,7 +11,7 @@
         <folder source="Interface" destination="Interface" />
         <folder source="SKSE" destination="SKSE" />
         <folder source="PrismaUI" destination="PrismaUI" />
-        <file source="FAQ.md" destination="IntelEngine Tools\FAQ.md" />
+        <file source="FAQ.md" destination="IntelEngineTools\FAQ.md" />
     </requiredInstallFiles>
 
     <installSteps order="Explicit">
@@ -20,8 +20,8 @@
                 <group name="Install" type="SelectAll">
                     <plugins order="Explicit">
                         <plugin name="IntelEngine">
-                            <description>AI-powered NPC autonomy mod for Skyrim, powered by SkyrimNet's LLM integration.
-Player FAQ: Data\IntelEngine Tools\FAQ.md
+                            <description>AI-powered NPC autonomy mod for Skyrim, powered by SkyrimNet.
+Player FAQ: IntelEngineTools\FAQ.md
 
 Features:
 - Player-directed NPC tasks (GoToLocation, FetchPerson, DeliverMessage, SearchForActor, ScheduleMeeting, EscortTarget)
@@ -54,15 +54,15 @@ Requirements:
                         <plugin name="Legacy save converter">
                             <description>New game? Skip this!
 Playthrough from IntelEngine 3.5.2 or earlier? Tick "Legacy save converter".
-Help and warnings: FAQ.md in the "IntelEngine Tools" folder.
+Help and warnings: FAQ.md in the "IntelEngineTools" folder.
 
 After installing:
 1. Close Skyrim and back up the save's .ess and .skse.
-2. Drag the .ess onto Convert-IE-Save.bat in "IntelEngine Tools" (MO2: right-click IntelEngine → Open in Explorer).
+2. Drag the .ess onto Convert-IE-Save.bat in "IntelEngineTools" (MO2: right-click IntelEngine → Open in Explorer).
 3. Start Skyrim and load the new "..._IEconverted" save.</description>
                             <files>
-                                <file source="IntelEngine Tools\LegacyCacheMigration.exe" destination="IntelEngine Tools\LegacyCacheMigration.exe" />
-                                <file source="IntelEngine Tools\Convert-IE-Save.bat" destination="IntelEngine Tools\Convert-IE-Save.bat" />
+                                <file source="IntelEngineTools\LegacyCacheMigration.exe" destination="IntelEngineTools\LegacyCacheMigration.exe" />
+                                <file source="IntelEngineTools\Convert-IE-Save.bat" destination="IntelEngineTools\Convert-IE-Save.bat" />
                             </files>
                             <typeDescriptor>
                                 <type name="Optional"/>
