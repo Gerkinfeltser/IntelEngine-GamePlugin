@@ -2,7 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://qconsulting.ca/fo3/ModConfig5.0.xsd">
     <moduleName>IntelEngine v3.5.2</moduleName>
-    <moduleImage path="fomod\screenshot.png" />
+    <moduleImage path="fomod\IE-cover.png" />
 
     <requiredInstallFiles>
         <file source="IntelEngine.esp" destination="IntelEngine.esp" />
@@ -37,7 +37,7 @@ Requirements:
 - SkyUI (MCM)
 - Papyrus MessageBox - SKSE NG (Skyrim 1.6 and earlier)
   OR PapyrusMessageBox-1.7.104 (Skyrim 1.7)</description>
-                            <image path="fomod\screenshot.png" />
+                            <image path="fomod\IE-cover.png" />
                             <files />
                             <typeDescriptor>
                                 <type name="Required"/>
@@ -60,7 +60,7 @@ After installing:
 1. Close Skyrim and back up the save's .ess and .skse.
 2. Drag the .ess onto Convert-IE-Save.bat in "IntelEngineTools" (MO2: right-click IntelEngine → Open in Explorer).
 3. Start Skyrim and load the new "..._IEconverted" save.</description>
-                            <image path="fomod\screenshot.png" />
+                            <image path="fomod\IE-cover.png" />
                             <files>
                                 <file source="IntelEngineTools\LegacyCacheMigration.exe" destination="IntelEngineTools\LegacyCacheMigration.exe" />
                                 <file source="IntelEngineTools\Convert-IE-Save.bat" destination="IntelEngineTools\Convert-IE-Save.bat" />
