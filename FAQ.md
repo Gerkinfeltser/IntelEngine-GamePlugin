@@ -212,6 +212,8 @@ See the [Game changelog](CHANGELOG.md#unreleased) and [native compatibility note
 
 Yes — if you're continuing a playthrough from IntelEngine 3.5.2 or earlier, run the included converter first to preserve surviving names. Tested on 3.5.2 saves; saves from older versions convert if their format matches and are refused otherwise. Starting a fresh game? You can skip this.
 
+Find IntelEngine Tools in your installed mod: in MO2, right-click IntelEngine → Open in Explorer, then open IntelEngine Tools. In Vortex, open your game's Data folder, then IntelEngine Tools. The FAQ installs for everyone; select Legacy save converter in the installer if you need the executable and launcher.
+
 1. Close Skyrim.
 2. Back up your save's matching `.ess` and `.skse` files and keep them together in the same folder; back up IntelEngine and SkyrimNet's extra data too if you might roll back.
 3. Keep `LegacyCacheMigration.exe` beside `Convert-IE-Save.bat`, then drag your `.ess` onto `Convert-IE-Save.bat` — leave its matching `.skse` beside the save.
@@ -219,7 +221,9 @@ Yes — if you're continuing a playthrough from IntelEngine 3.5.2 or earlier, ru
 
 If the converter says the save path is not allowed (Reparse path rejected), your save folder is a link or junction (for example My Games moved to another drive, or OneDrive): copy the .ess and .skse pair to a normal folder such as Desktop\IE-convert and drag the .ess from there.
 
-This works on **Skyrim 1.6.1170 and 1.7.104 only**. It refuses saves it can't qualify and can't recover already-lost names; skipping it means old names may show up wrong. Your originals stay untouched — don't load an incomplete converted pair or mix old and converted files. **Never load a converted save with 3.5.2 or earlier.**
+This works on **Skyrim 1.6.1170 and 1.7.104 only**; VR saves are not convertible. It refuses saves it can't qualify and can't recover already-lost names; skipping it means old names may show up wrong. Your originals stay untouched — don't load an incomplete converted pair, mix original and converted companions, or convert the same save again. **Never load a converted save with 3.5.2 or earlier.**
+
+Windows SmartScreen may warn because the tool is unsigned: choose More info → Run anyway.
 
 Advanced users can read the [native offline-conversion documentation](https://github.com/Gerkinfeltser/IntelEngine-NativePlugin/blob/dev/docs/DLL_API.md#offline-legacy-save-conversion).
 

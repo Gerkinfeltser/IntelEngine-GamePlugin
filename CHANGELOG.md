@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Add an optional, initially unselected FOMOD upgrade step with the legacy save converter, drag-and-drop launcher and player FAQ for eligible saves from IntelEngine 3.5.2 or earlier.
+- Install the player FAQ for everyone and add an optional, initially unselected FOMOD upgrade step with the legacy save converter and drag-and-drop launcher for eligible saves from IntelEngine 3.5.2 or earlier; keep the installer instructions short and put limits, warnings and troubleshooting in the FAQ.
 
 ### Offline legacy-save fix mode
 - Add a player-oriented one-save fix command for eligible saves from IntelEngine 3.5.2 or earlier, accepting co-save runtimes 1.6.1170.0 and 1.7.104.0 only. Tested on 3.5.2 saves; saves from older versions convert if their format matches and are refused otherwise. It is an offline co-save format/runtime gate, not an IntelEngine version check or a claim that all legacy saves qualify. Rendered-cache storage first appeared in IntelEngine 2.0.0.
