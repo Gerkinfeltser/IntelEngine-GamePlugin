@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- Native #42: stage rebuilt `IntelEngine.pex` and `IntelEngine_Core.pex` with exact decimal-string dashboard FormID transport, including FE/FF IDs. Requires the matching Native DLL; final paired DLL staging is pending the offline identity build. No installation or live verification performed.
+- Native #42: stage rebuilt `IntelEngine.pex` and `IntelEngine_Core.pex` with exact decimal-string dashboard FormID transport, including FE/FF IDs. Paired with the offline-built identity DLL; no installation or live verification performed.
+- Native #41: manual Story and Social Director selections use exact full-name lookup across indexed and currently tracked actor references, independent of automatic candidate pools. Same-reference duplicates are accepted; distinct-reference clashes log both FormIDs. Dead/disabled/deleted references reject. Automatic selection remains unchanged and now logs specific rejection branches.
+- Native #43: reject empty/reverse/within-word faction-leader name matches, preserve title-prefixed names and player-cell preference, and log matched leader FormIDs at info level. Final paired DLL and both changed PEX compiled successfully; offline identity checks passed. Unloaded story dispatch is supported by the existing off-screen source path but remains unverified live.
 
 - Print world knowledge shared by every Story DM candidate once, while preserving each candidate's additional facts and silent fact-check constraints. Zero or one candidate keeps knowledge local. Offline production-code and full-prompt checks passed; live Story DM behavior is untested.
 - Remove unused Dialogue Safety Net and Director pending-parameter natives, their private backing code, and matching Papyrus declarations. Rebuild `IntelEngine.pex`; pair it with the matching DLL. Director parameters remain in the existing ModEvent JSON payload. Offline compilation and payload checks passed; game loading and dispatch are untested.
