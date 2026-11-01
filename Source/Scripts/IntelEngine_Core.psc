@@ -1930,6 +1930,7 @@ Function RegisterDashboardEvents()
     RegisterForModEvent("IntelEngine_DashboardExecuteAction", "OnDashboardExecuteAction")
     RegisterForModEvent("IntelEngine_AutoBioUpdate", "OnAutoBioUpdate")
     RegisterForModEvent("IntelEngine_SaveBioCount", "OnSaveBioCount")
+    RegisterForModEvent("SkyrimNet_OnPluginConfigSaved", "OnSkyrimNetPluginConfigSaved")
     DebugMsg("Dashboard ModEvent listeners registered")
 EndFunction
 
@@ -1972,6 +1973,12 @@ Event OnDashboardRefresh(String eventName, String strArg, Float numArg, Form sen
     PushDashboardState()
 EndEvent
 
+Event OnSkyrimNetPluginConfigSaved(String eventName, String strArg, Float numArg, Form sender)
+    If strArg == "IntelEngine"
+        IntelEngine.ReloadDashboardConfig()
+    EndIf
+EndEvent
+
 Event OnDashboardCancelTask(String eventName, String strArg, Float numArg, Form sender)
     Int slot = numArg as Int
     If slot >= 0 && slot < MAX_SLOTS
@@ -1988,6 +1995,13 @@ EndEvent
 Event OnDashboardCancelQuest(String eventName, String strArg, Float numArg, Form sender)
     If StoryEngine != None && StoryEngine.QuestActive
         DebugMsg("Dashboard: Cancelling active quest")
+        Actor courier = StoryEngine.ActiveStoryNPC
+        If courier != None
+            Int courierSlot = FindSlotByAgent(courier)
+            If courierSlot >= 0
+                ClearSlotRestoreFollower(courierSlot, courier)
+            EndIf
+        EndIf
         StoryEngine.CleanupQuest()
         StoryEngine.CleanupStoryDispatch()
         PushDashboardState()
@@ -1995,7 +2009,10 @@ Event OnDashboardCancelQuest(String eventName, String strArg, Float numArg, Form
 EndEvent
 
 Event OnDashboardRemovePackages(String eventName, String strArg, Float numArg, Form sender)
-    Int formId = numArg as Int
+    Int formId = IntelEngine.ParseFormID(strArg)
+    If formId == 0
+        Return
+    EndIf
     Actor npc = Game.GetForm(formId) as Actor
     If npc != None
         DebugMsg("Dashboard: Removing packages from " + npc.GetDisplayName())
@@ -2404,9 +2421,14 @@ EndEvent
 ; DIRECTOR MODE: Action Execution
 ; =============================================================================
 Event OnDashboardExecuteAction(String eventName, String strArg, Float numArg, Form sender)
-    ; strArg = full JSON payload (race-safe), numArg = npcFormId
+    ; strArg = full JSON payload, including exact decimal npcFormId
     String actionName = IntelEngine.StoryResponseGetField(strArg, "actionName")
-    Actor npc = Game.GetForm(numArg as Int) as Actor
+    String formIdString = IntelEngine.StoryResponseGetField(strArg, "npcFormId")
+    Int formId = IntelEngine.ParseFormID(formIdString)
+    If formId == 0
+        Return
+    EndIf
+    Actor npc = Game.GetForm(formId) as Actor
 
     If !npc || npc.IsDead()
         DebugMsg("Director: Invalid or dead NPC for action execution")
