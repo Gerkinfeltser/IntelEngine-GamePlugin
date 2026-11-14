@@ -64,13 +64,9 @@ With Magelight, IE's choice prompts (Allow/Deny, door knock, quest offer) use a 
                 <group name="Upgrade tools" type="SelectAll">
                     <plugins order="Explicit">
                         <plugin name="Legacy save converter (separate download)">
-                            <description>Starting a fresh game? You don't need the converter.
-Upgrading a save from IntelEngine 3.5.2 or earlier? The converter is a separate download:
-https://github.com/galanx/IntelEngine-GamePlugin/releases/tag/save-converter-1
-1. Close Skyrim and back up the save's .ess and .skse.
-2. Unzip the converter anywhere and drag the .ess onto Convert-IE-Save.bat.
-3. Start Skyrim and load the new "..._IEconverted" save.
-See FAQ.md in IntelEngineTools for more.</description>
+                            <description>Only for saves from IntelEngine 3.5.2 or earlier. Fresh games: skip this.
+Download the converter and its steps here:
+https://github.com/galanx/IntelEngine-GamePlugin/releases/tag/save-converter-1</description>
                             <image path="fomod\IE-converter.jpg" />
                             <files />
                             <typeDescriptor>
