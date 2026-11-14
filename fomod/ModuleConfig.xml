@@ -23,11 +23,7 @@
                         <plugin name="IntelEngine">
                             <description>AI-powered NPC autonomy for Skyrim, powered by SkyrimNet.
 
-Requires: SKSE, SkyrimNet Beta 27+, PapyrusExtender (po3), PapyrusUtil, SkyUI.
-Without Magelight UI also: Papyrus MessageBox - SKSE NG (Skyrim 1.6) or PapyrusMessageBox-1.7.104 (Skyrim 1.7).
-Dashboard (optional, separate): Magelight UI 1.7.1+ recommended, or PrismaUI.
-
-Details: IntelEngineTools\FAQ.md and the README.</description>
+Needs SKSE, SkyrimNet Beta 27+, PapyrusExtender, PapyrusUtil, SkyUI. (Full requirements: the README's Requirements section.)</description>
                             <image path="fomod\IE-cover.jpg" />
                             <files />
                             <typeDescriptor>
@@ -43,7 +39,8 @@ Details: IntelEngineTools\FAQ.md and the README.</description>
                 <group name="Upgrade tools" type="SelectAll">
                     <plugins order="Explicit">
                         <plugin name="Legacy save converter (separate download)">
-                            <description>Only for saves from IntelEngine 3.5.2 or earlier. Fresh games: skip this.
+                            <description>ONLY for saves from IntelEngine 3.5.2 or earlier.
+Fresh games: skip this.
 Download the converter and its steps here:
 https://github.com/galanx/IntelEngine-GamePlugin/releases/tag/save-converter-1</description>
                             <image path="fomod\IE-converter.jpg" />
