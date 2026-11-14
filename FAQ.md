@@ -4,7 +4,31 @@ By Galanx 3/2026
 
 > **New in 3.6.0:** convert before loading an old save with 3.6.0. The tools install for everyone; fresh games do not need conversion. Eligible SE/AE saves from IE 3.5.2 or earlier and VR 1.4.15 saves from VR-capable IE 3.5.1 or earlier are supported, with bounded real-fixture acceptance, not blanket old-save safety. See [IntelEngine 3.6.0 update](#intelengine-360-update) for instructions and limits.
 
+**Q: The converter says “no conversion needed” and creates no files. What now?**
+If a valid co-save has a STRV record but no IntelEngine rendered-cache targets, `fix` leaves the originals unchanged and returns exit code **2** without creating a backup or converted pair. This result is not a repair or blanket old-save safety clearance. An absent STRV can instead produce a verified byte-identical copy (exit **0**).
+
 Original answers are preserved below; ~~struck text~~ is superseded by the dated update immediately after it, and dated notes qualify unverified claims.
+
+> **Updated for 3.8.0: settings have one name everywhere.** The MCM, the dashboard and SkyrimNet's plugin settings page now use the same names. The answers below were written with the older MCM labels; this is what they are called now.
+>
+> | In the answers below | Now |
+> |---|---|
+> | Action Confirmation Prompts | Ask before starting |
+> | Actions Followers Can Do, Skip Action for Followers | What followers can be asked to do |
+> | Go To Location, Fetch Person, Deliver Message, Escort Target, Search For Actor | Go somewhere, Fetch someone, Deliver a message, Escort someone, Search for someone |
+> | Schedule Meeting, Schedule Fetch, Schedule Delivery | Arrange a meeting, Fetch someone later, Deliver a message later |
+> | Check Interval | Check interval (game hours) |
+> | Long Absence | Long absence (days) |
+> | Max Travel Time | Longest journey (days) |
+> | Teleport When Stuck, Teleport on stuck/timeout | Move a stuck traveller along |
+> | Story Types (DM): Seek Player, Informant, Road Encounter, Message, Quest, Ambush, Faction Ambush, Stalker | Story types: Someone comes to see you, Someone brings a rumor, A meeting on the road, A message is delivered, Someone has work for you, An ambush, A faction's patrol hunts you, Someone follows you unseen |
+> | Quest Types: Combat, Rescue, Find Item, Faction Combat, Faction Rescue, Faction Battle | Quest kinds: Clear out enemies, Rescue someone, Find an item, Fight a faction's enemies, Rescue for a faction, Join a faction's battle |
+> | Quest Timeout | Quest expires after (days) |
+> | Interaction Interval, NPC Social Cooldown | Check interval (game hours) and Rest per NPC (game hours), under NPCs among themselves |
+> | NPC Interaction, NPC Gossip | Kind: one NPC goes to see another, Kind: gossip passed on |
+> | Max Concurrent Tasks | NPCs on a task at once |
+> | Default Wait Hours | Wait at a destination (game hours) |
+> | Hold Restrictions: Seek Player, Informant, ... | Hold Restrictions, each group headed by the story type's new name |
 
 **Q: What is IntelEngine?**
 
@@ -32,9 +56,9 @@ Nine factions form alliances, negotiate trade deals, spy on each other, declare 
 
 **Q: My followers keep leaving to do tasks. How do I stop this?**
 
-MCM or Prisma Dashboard → Settings → Skip Action for Followers. Toggle ON for any actions you want blocked ~~(`Go To Location`, `Fetch Person`, `Deliver Message`, `Escort Target`)~~. ~~Followers will still talk, gossip, and interact — they just won't physically leave your side.~~
+MCM or Dashboard → Settings → Skip Action for Followers. Toggle ON for any actions you want blocked ~~(`Go To Location`, `Fetch Person`, `Deliver Message`, `Escort Target`)~~. ~~Followers will still talk, gossip, and interact — they just won't physically leave your side.~~
 
-> **Updated 2026-10-19 (3.6.0 update):** MCM or Dashboard → Settings → Skip Action for Followers: turn ON each action you want blocked, including Search For Actor and all three scheduling actions. These default OFF; your active followers can still talk to you, but aren't picked for autonomous stories or social events.
+> **Updated for 3.8.0:** MCM or Dashboard → Settings → What followers can be asked to do (called Skip Action for Followers before 3.8): turn OFF each action you want blocked, including Search for someone and all three scheduling actions (Arrange a meeting, Fetch someone later, Deliver a message later). These default ON; your active followers can still talk to you, but aren't picked for autonomous stories or social events.
 
 **Q: Can I get a confirmation prompt instead of blocking entirely?**
 
@@ -52,9 +76,9 @@ Adjust Check Interval (default 3 hours, range 0.5–168). Lower = more frequent.
 
 **Q: The same NPC keeps getting picked.**
 
-Increase ~~NPC Cooldown~~ (default 24 hours, range 6–72).
+Raise Long Absence (MCM → Settings → Story Tuning; default 3 days, range 1–14): an NPC who has just come to you is left alone for at least that long. For NPC-to-NPC activity, adjust NPC Social Cooldown instead.
 
-> **Updated 2026-10-19 (3.6.0 update):** MCM → Settings → Story NPC Cooldown (hours): default 24, range 6–72. For NPC-to-NPC activity, adjust NPC Social Cooldown instead.
+> **Updated for 3.8.0:** the Story NPC Cooldown slider is gone. The game used the longer of it and Long Absence, so with the default of three days its 6 to 72 hours changed nothing.
 
 **Q: I don't want hostile encounters (ambushes, stalkers).**
 
@@ -112,7 +136,7 @@ Quest Timeout slider (default 1 day, max 30). After this, unfinished quests auto
 
 **Q: How do I see faction relations?**
 
-Prisma Dashboard (`Shift+7`) → **Politics** tab. Shows faction grid, active wars, standings, and events.
+Dashboard (`Shift+7`) → **Politics** tab. Shows faction grid, active wars, standings, and events.
 
 **Q: Can I trigger political events manually?**
 
@@ -146,7 +170,7 @@ Lower Max Travel Time (default 1 day). NPCs exceeding this teleport or give up.
 
 ~~Teleport When Stuck~~ is ON by default. Check Active Tasks in MCM to see and manage ~~all tasks~~.
 
-> **Updated 2026-10-19 (3.6.0 update):** MCM → Settings → Teleport on stuck/timeout is ON by default. Manage player tasks in MCM → Active Tasks, or inspect and remove stuck AI packages in Dashboard → Packages.
+> **Updated 2026-10-19 (3.6.0 update):** MCM → Settings → Teleport on stuck/timeout is ON by default. Manage player tasks in MCM → Active Tasks, or inspect and remove stuck AI packages in Dashboard → Tasks.
 
 **Q: Too many NPCs doing tasks at once.**
 
@@ -202,7 +226,7 @@ Galanx is IntelEngine's original author.
 PhospheneOD (Gerkinfeltser on GitHub) maintains it now, with Galanx's go-ahead, in the official [GamePlugin](https://github.com/galanx/IntelEngine-GamePlugin) and [NativePlugin](https://github.com/galanx/IntelEngine-NativePlugin) repositories.
 For bugs, use the [issue-reporting callout below](#have-issues-report-them-here).
 
-IntelEngine 3.6.0 declares SkyrimNet Beta 25 as its minimum and was tested with official Beta 28. VR 1.4.15 should work and was partly tested.
+IntelEngine 3.6.0 declares SkyrimNet Beta 25 as its minimum and was tested with official Beta 28. 3.7.0 and later (including 3.8.0) require SkyrimNet Beta 27 or newer. VR 1.4.15 should work and was partly tested.
 
 **Q: What changes after Galanx's 3.5.2?**
 

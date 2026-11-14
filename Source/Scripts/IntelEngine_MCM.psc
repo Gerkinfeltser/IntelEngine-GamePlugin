@@ -119,6 +119,8 @@ Int OID_QuestAllowDeath
 ; Faction Politics
 Int OID_PoliticsEnabled
 Int OID_PoliticsTickInterval
+Int OID_PEIntegration
+Int OID_PEReactions
 
 ; Hold Restriction page (per-story-type radio groups)
 Int OID_HoldSeekNone
@@ -201,6 +203,13 @@ EndEvent
 
 Event OnConfigOpen()
     EnsurePages()
+EndEvent
+
+Event OnConfigClose()
+    ; What was changed here also goes to SkyrimNet's settings file, for its plugin settings page.
+    If Core
+        Core.SyncSettingsToPluginConfig()
+    EndIf
 EndEvent
 
 Function EnsurePages()
@@ -369,61 +378,65 @@ Function ShowSettingsPage()
     AddTextOption("Mod by", "Galanx", OPTION_FLAG_DISABLED)
 
     Bool debugEnabled = Core.IsDebugMode()
-    OID_DebugMode = AddToggleOption("Debug Mode", debugEnabled)
+    OID_DebugMode = AddToggleOption("Debug messages", debugEnabled)
 
     Float maxTasks = Core.GetMaxConcurrentTasks() as Float
-    OID_MaxTasks = AddSliderOption("Max Concurrent Tasks", maxTasks, "{0}")
+    OID_MaxTasks = AddSliderOption("NPCs on a task at once", maxTasks, "{0}")
 
     Float waitHours = Core.GetDefaultWaitHours()
-    OID_DefaultWaitHours = AddSliderOption("Default Wait Hours", waitHours, "{0}")
+    OID_DefaultWaitHours = AddSliderOption("Wait at a destination (game hours)", waitHours, "{0}")
 
     AddEmptyOption()
-    AddHeaderOption("Action Confirmation Prompts")
-    ; 0=Disabled, 1=Followers Only, 2=Everyone
+    AddHeaderOption("Ask before starting")
+    ; 0=Disabled, 1=Followers only, 2=Everyone
     If Core != None && Core.StoryEngine != None
-        OID_ConfirmGoToLocation = AddTextOption("Go To Location", ConfirmModeLabel(Core.StoryEngine.ConfirmGoToLocation))
-        OID_ConfirmFetchPerson = AddTextOption("Fetch Person", ConfirmModeLabel(Core.StoryEngine.ConfirmFetchPerson))
-        OID_ConfirmDeliverMessage = AddTextOption("Deliver Message", ConfirmModeLabel(Core.StoryEngine.ConfirmDeliverMessage))
-        OID_ConfirmEscortTarget = AddTextOption("Escort Target", ConfirmModeLabel(Core.StoryEngine.ConfirmEscortTarget))
-        OID_ConfirmSearchForActor = AddTextOption("Search For Actor", ConfirmModeLabel(Core.StoryEngine.ConfirmSearchForActor))
-        OID_ConfirmScheduleMeeting = AddTextOption("Schedule Meeting", ConfirmModeLabel(Core.StoryEngine.ConfirmScheduleMeeting))
-        OID_ConfirmScheduleFetch = AddTextOption("Schedule Fetch", ConfirmModeLabel(Core.StoryEngine.ConfirmScheduleFetch))
-        OID_ConfirmScheduleDelivery = AddTextOption("Schedule Delivery", ConfirmModeLabel(Core.StoryEngine.ConfirmScheduleDelivery))
+        OID_ConfirmGoToLocation = AddTextOption("Go somewhere", ConfirmModeLabel(Core.StoryEngine.ConfirmGoToLocation))
+        OID_ConfirmFetchPerson = AddTextOption("Fetch someone", ConfirmModeLabel(Core.StoryEngine.ConfirmFetchPerson))
+        OID_ConfirmDeliverMessage = AddTextOption("Deliver a message", ConfirmModeLabel(Core.StoryEngine.ConfirmDeliverMessage))
+        OID_ConfirmEscortTarget = AddTextOption("Escort someone", ConfirmModeLabel(Core.StoryEngine.ConfirmEscortTarget))
+        OID_ConfirmSearchForActor = AddTextOption("Search for someone", ConfirmModeLabel(Core.StoryEngine.ConfirmSearchForActor))
+        OID_ConfirmScheduleMeeting = AddTextOption("Arrange a meeting", ConfirmModeLabel(Core.StoryEngine.ConfirmScheduleMeeting))
+        OID_ConfirmScheduleFetch = AddTextOption("Fetch someone later", ConfirmModeLabel(Core.StoryEngine.ConfirmScheduleFetch))
+        OID_ConfirmScheduleDelivery = AddTextOption("Deliver a message later", ConfirmModeLabel(Core.StoryEngine.ConfirmScheduleDelivery))
     EndIf
 
     Bool reportBack = StorageUtil.GetIntValue(Game.GetPlayer(), "Intel_DeliveryReportBack") as Bool
-    OID_DeliveryReportBack = AddToggleOption("Report Back After Delivery", reportBack)
+    OID_DeliveryReportBack = AddToggleOption("Report back after a delivery", reportBack)
 
     Float meetTimeout = StorageUtil.GetFloatValue(Game.GetPlayer(), "Intel_MeetingTimeoutHours", 5.0)
-    OID_MeetingTimeoutHours = AddSliderOption("Meeting Timeout Hours", meetTimeout, "{1}")
+    OID_MeetingTimeoutHours = AddSliderOption("Wait for you at a meeting (game hours)", meetTimeout, "{1}")
 
     Float gracePeriod = 0.5
     If Core != None
         gracePeriod = Core.MeetingGracePeriod
     EndIf
-    OID_MeetingGracePeriod = AddSliderOption("Meeting Grace Period (hours)", gracePeriod, "{1}")
+    OID_MeetingGracePeriod = AddSliderOption("On time until (game hours late)", gracePeriod, "{1}")
 
     Float lingerDist = 800.0
     If Core != None
         lingerDist = Core.LINGER_RELEASE_DISTANCE
     EndIf
-    OID_LingerReleaseDistance = AddSliderOption("NPC Release Distance", lingerDist, "{0}")
+    OID_LingerReleaseDistance = AddSliderOption("Visit ends when you walk away (units)", lingerDist, "{0}")
 
     AddEmptyOption()
-    AddHeaderOption("Story Engine")
+    ; Spelled exactly like the switch below it. Not "Story Engine": the story script has the string
+    ; "Story engine", and Papyrus keeps one spelling per string (the heading showed with a small e).
+    AddHeaderOption("Stories")
 
     Bool storyEnabled = Core.IsStoryEngineEnabled()
-    OID_StoryEngineEnabled = AddToggleOption("Enable Story Engine", storyEnabled)
+    OID_StoryEngineEnabled = AddToggleOption("Stories", storyEnabled)
     OID_StoryForceRestart = AddTextOption("Force Restart", "GO")
 
     Float storyInterval = Core.GetStoryEngineInterval()
-    OID_StoryEngineInterval = AddSliderOption("Check Interval (hours)", storyInterval, "{1}")
+    OID_StoryEngineInterval = AddSliderOption("Check interval (game hours)", storyInterval, "{1}")
 
-    Float storyCooldown = Core.GetStoryEngineCooldown()
-    OID_StoryEngineCooldown = AddSliderOption("Story NPC Cooldown (hours)", storyCooldown, "{0}")
+    ; "Story NPC Cooldown" is not offered: the game uses the longer of it and Long Absence (three days by
+    ; default), so its 6 to 72 hours changed nothing. Long Absence, under Story Tuning, is the setting.
+    ; -1: no option of this page answers to the id.
+    OID_StoryEngineCooldown = -1
 
     AddEmptyOption()
-    AddHeaderOption("Danger Zone Visits")
+    AddHeaderOption("NPCs sent into dangerous places")
 
     Int dangerPolicy = 1
     If Core != None && Core.StoryEngine != None
@@ -435,7 +448,7 @@ Function ShowSettingsPage()
     OID_DangerBlockAll = AddToggleOption("Block all NPCs", dangerPolicy == 3)
 
     AddEmptyOption()
-    AddHeaderOption("Player Home Visits")
+    AddHeaderOption("NPCs sent into your home")
 
     Int homePolicy = 0
     If Core != None && Core.StoryEngine != None
@@ -449,27 +462,29 @@ Function ShowSettingsPage()
     ; ---- Right column: Story Types + NPC Social + Tuning ----
     SetCursorPosition(1)
 
-    AddHeaderOption("Skip Action for Followers")
+    ; Stored as "skip for followers"; shown the other way round (on = followers can do it), because a column of
+    ; switches that are off under "Skip Action for Followers" read as "switched off for my followers".
+    AddHeaderOption("What followers can be asked to do")
     If Core != None && Core.StoryEngine != None
-        OID_SkipFollowerGoToLocation = AddToggleOption("Go To Location", Core.StoryEngine.SkipFollowerGoToLocation)
-        OID_SkipFollowerFetchPerson = AddToggleOption("Fetch Person", Core.StoryEngine.SkipFollowerFetchPerson)
-        OID_SkipFollowerDeliverMessage = AddToggleOption("Deliver Message", Core.StoryEngine.SkipFollowerDeliverMessage)
-        OID_SkipFollowerEscortTarget = AddToggleOption("Escort Target", Core.StoryEngine.SkipFollowerEscortTarget)
-        OID_SkipFollowerSearchForActor = AddToggleOption("Search For Actor", Core.StoryEngine.SkipFollowerSearchForActor)
-        OID_SkipFollowerScheduleMeeting = AddToggleOption("Schedule Meeting", Core.StoryEngine.SkipFollowerScheduleMeeting)
-        OID_SkipFollowerScheduleFetch = AddToggleOption("Schedule Fetch", Core.StoryEngine.SkipFollowerScheduleFetch)
-        OID_SkipFollowerScheduleDelivery = AddToggleOption("Schedule Delivery", Core.StoryEngine.SkipFollowerScheduleDelivery)
+        OID_SkipFollowerGoToLocation = AddToggleOption("Go somewhere", !Core.StoryEngine.SkipFollowerGoToLocation)
+        OID_SkipFollowerFetchPerson = AddToggleOption("Fetch someone", !Core.StoryEngine.SkipFollowerFetchPerson)
+        OID_SkipFollowerDeliverMessage = AddToggleOption("Deliver a message", !Core.StoryEngine.SkipFollowerDeliverMessage)
+        OID_SkipFollowerEscortTarget = AddToggleOption("Escort someone", !Core.StoryEngine.SkipFollowerEscortTarget)
+        OID_SkipFollowerSearchForActor = AddToggleOption("Search for someone", !Core.StoryEngine.SkipFollowerSearchForActor)
+        OID_SkipFollowerScheduleMeeting = AddToggleOption("Arrange a meeting", !Core.StoryEngine.SkipFollowerScheduleMeeting)
+        OID_SkipFollowerScheduleFetch = AddToggleOption("Fetch someone later", !Core.StoryEngine.SkipFollowerScheduleFetch)
+        OID_SkipFollowerScheduleDelivery = AddToggleOption("Deliver a message later", !Core.StoryEngine.SkipFollowerScheduleDelivery)
     EndIf
 
     AddEmptyOption()
     AddHeaderOption("Auto Dynamic Bio Updates")
     If Core != None && Core.StoryEngine != None
-        OID_AutoBioEnabled = AddToggleOption("Enabled", Core.StoryEngine.AutoBioEnabled)
-        OID_AutoBioThreshold = AddSliderOption("Lines Before Update", Core.StoryEngine.AutoBioThreshold as Float, "{0}")
+        OID_AutoBioEnabled = AddToggleOption("Refresh an NPC's profile after much talk", Core.StoryEngine.AutoBioEnabled)
+        OID_AutoBioThreshold = AddSliderOption("Lines before a profile refresh", Core.StoryEngine.AutoBioThreshold as Float, "{0}")
     EndIf
 
     AddEmptyOption()
-    AddHeaderOption("Story Types (DM)")
+    AddHeaderOption("Story types")
 
     Bool tSeek = true
     Bool tInformant = true
@@ -489,17 +504,17 @@ Function ShowSettingsPage()
         tMessage = Core.StoryEngine.TypeMessageEnabled
         tQuest = Core.StoryEngine.TypeQuestEnabled
     EndIf
-    OID_TypeSeekPlayer = AddToggleOption("Seek Player", tSeek)
-    OID_TypeInformant = AddToggleOption("Informant", tInformant)
-    OID_TypeRoadEncounter = AddToggleOption("Road Encounter", tRoad)
-    OID_TypeAmbush = AddToggleOption("Ambush", tAmbush)
-    OID_TypeFactionAmbush = AddToggleOption("Faction Ambush", tFactionAmbush)
-    OID_TypeStalker = AddToggleOption("Stalker", tStalker)
-    OID_TypeMessage = AddToggleOption("Message", tMessage)
-    OID_TypeQuest = AddToggleOption("Quest", tQuest)
+    OID_TypeSeekPlayer = AddToggleOption("Someone comes to see you", tSeek)
+    OID_TypeInformant = AddToggleOption("Someone brings a rumor", tInformant)
+    OID_TypeRoadEncounter = AddToggleOption("A meeting on the road", tRoad)
+    OID_TypeAmbush = AddToggleOption("An ambush", tAmbush)
+    OID_TypeFactionAmbush = AddToggleOption("A faction's patrol hunts you", tFactionAmbush)
+    OID_TypeStalker = AddToggleOption("Someone follows you unseen", tStalker)
+    OID_TypeMessage = AddToggleOption("A message is delivered", tMessage)
+    OID_TypeQuest = AddToggleOption("Someone has work for you", tQuest)
 
     AddEmptyOption()
-    AddHeaderOption("NPC Social Life")
+    AddHeaderOption("NPCs among themselves")
 
     Bool npcTickEnabled = true
     Float npcTickInterval = 1.5
@@ -507,7 +522,7 @@ Function ShowSettingsPage()
         npcTickEnabled = Core.StoryEngine.NPCTickEnabled
         npcTickInterval = Core.StoryEngine.NPCTickIntervalHours
     EndIf
-    OID_NPCTickEnabled = AddToggleOption("Enable NPC Interactions", npcTickEnabled)
+    OID_NPCTickEnabled = AddToggleOption("NPCs visit and talk to each other", npcTickEnabled)
 
     Bool tInteraction = true
     Bool tGossip = true
@@ -515,16 +530,16 @@ Function ShowSettingsPage()
         tInteraction = Core.StoryEngine.TypeNPCInteractionEnabled
         tGossip = Core.StoryEngine.TypeNPCGossipEnabled
     EndIf
-    OID_TypeNPCInteraction = AddToggleOption("NPC Interaction", tInteraction)
-    OID_TypeNPCGossip = AddToggleOption("NPC Gossip", tGossip)
+    OID_TypeNPCInteraction = AddToggleOption("Kind: one NPC goes to see another", tInteraction)
+    OID_TypeNPCGossip = AddToggleOption("Kind: gossip passed on", tGossip)
 
-    OID_NPCTickInterval = AddSliderOption("NPC Interaction Interval (hours)", npcTickInterval, "{1}")
+    OID_NPCTickInterval = AddSliderOption("Check interval (game hours)", npcTickInterval, "{1}")
 
     Float npcSocialCooldown = 24.0
     If Core != None && Core.StoryEngine != None
         npcSocialCooldown = Core.StoryEngine.NPCSocialCooldownHours
     EndIf
-    OID_NPCSocialCooldown = AddSliderOption("NPC Social Cooldown (hours)", npcSocialCooldown, "{0}")
+    OID_NPCSocialCooldown = AddSliderOption("Rest per NPC (game hours)", npcSocialCooldown, "{0}")
 
     AddEmptyOption()
     AddHeaderOption("Story Tuning")
@@ -535,23 +550,23 @@ Function ShowSettingsPage()
         longAbsence = Core.StoryEngine.LongAbsenceDaysConfig
         maxTravel = Core.StoryEngine.MaxTravelDaysConfig
     EndIf
-    OID_StoryLongAbsence = AddSliderOption("Long Absence (days)", longAbsence, "{0}")
-    OID_StoryMaxTravel = AddSliderOption("Max Travel Time (days)", maxTravel, "{2}")
+    OID_StoryLongAbsence = AddSliderOption("Long absence (days)", longAbsence, "{0}")
+    OID_StoryMaxTravel = AddSliderOption("Longest journey (days)", maxTravel, "{2}")
 
     Bool allowTeleport = true
     If Core != None && Core.StoryEngine != None
         allowTeleport = Core.StoryEngine.AllowStuckTeleport
     EndIf
-    OID_AllowStuckTeleport = AddToggleOption("Teleport on stuck/timeout", allowTeleport)
+    OID_AllowStuckTeleport = AddToggleOption("Move a stuck traveller along", allowTeleport)
 
     Float questExpiry = 1.0
     If Core != None && Core.StoryEngine != None
         questExpiry = Core.StoryEngine.QUEST_EXPIRY_DAYS
     EndIf
-    OID_QuestExpiryDays = AddSliderOption("Quest Timeout (days)", questExpiry, "{0}")
+    OID_QuestExpiryDays = AddSliderOption("Quest expires after (days)", questExpiry, "{0}")
 
     AddEmptyOption()
-    AddHeaderOption("Quest Types")
+    AddHeaderOption("Quest kinds")
     Bool tQuestCombat = true
     Bool tQuestRescue = true
     Bool tQuestFindItem = true
@@ -568,22 +583,29 @@ Function ShowSettingsPage()
         tQuestFactionBattle = Core.StoryEngine.QuestSubTypeFactionBattleEnabled
         tQuestAllowDeath = Core.StoryEngine.QuestAllowVictimDeath
     EndIf
-    OID_QuestCombat = AddToggleOption("Combat quests", tQuestCombat)
-    OID_QuestRescue = AddToggleOption("Rescue quests", tQuestRescue)
-    OID_QuestFindItem = AddToggleOption("Find item quests", tQuestFindItem)
-    OID_QuestFactionCombat = AddToggleOption("Faction combat quests", tQuestFactionCombat)
-    OID_QuestFactionRescue = AddToggleOption("Faction rescue quests", tQuestFactionRescue)
-    OID_QuestFactionBattle = AddToggleOption("Faction battle quests", tQuestFactionBattle)
-    OID_QuestAllowDeath = AddToggleOption("Allow NPC death in rescue", tQuestAllowDeath)
+    OID_QuestCombat = AddToggleOption("Clear out enemies", tQuestCombat)
+    OID_QuestRescue = AddToggleOption("Rescue someone", tQuestRescue)
+    OID_QuestFindItem = AddToggleOption("Find an item", tQuestFindItem)
+    OID_QuestFactionCombat = AddToggleOption("Fight a faction's enemies", tQuestFactionCombat)
+    OID_QuestFactionRescue = AddToggleOption("Rescue for a faction", tQuestFactionRescue)
+    OID_QuestFactionBattle = AddToggleOption("Join a faction's battle", tQuestFactionBattle)
+    ; "Allow NPC death in rescue" is not offered: nothing reads the setting, and a rescue's victim is always
+    ; kept alive (made essential) for its length.
+    OID_QuestAllowDeath = -1
 
     AddEmptyOption()
-    AddHeaderOption("Faction Politics")
+    ; Spelled exactly like the switch below it. Papyrus keeps one spelling per string, whichever it met first:
+    ; "Faction Politics" here made the switch show with a capital P. And not "Politics" alone: the politics
+    ; script hands the key "politics" to the DLL, which must not arrive in another spelling.
+    AddHeaderOption("Faction politics")
 
     Bool politicsEnabled = IntelEngine.IsPoliticsEnabled()
-    OID_PoliticsEnabled = AddToggleOption("Enable Faction Politics", politicsEnabled)
+    OID_PoliticsEnabled = AddToggleOption("Faction politics", politicsEnabled)
 
     Float tickInterval = IntelEngine.GetPoliticsTickInterval() as Float
-    OID_PoliticsTickInterval = AddSliderOption("Tick Interval (hours)", tickInterval, "{0}")
+    OID_PoliticsTickInterval = AddSliderOption("Check interval (game hours)", tickInterval, "{0}")
+    OID_PEIntegration = AddToggleOption("Political Engine integration (experimental)", IntelEngine.GetPEIntegration())
+    OID_PEReactions = AddToggleOption("PE reactions move relations", IntelEngine.GetPEReactionsMoveRelations())
 
 EndFunction
 
@@ -596,17 +618,18 @@ Function ShowHoldRestrictionsPage()
     SetCursorPosition(0)
 
     AddHeaderOption("Hold Restrictions")
-    AddTextOption("Controls whether NPCs can", "", OPTION_FLAG_DISABLED)
-    AddTextOption("travel across holds by type.", "", OPTION_FLAG_DISABLED)
-    AddTextOption("Default: Same Hold (Civilians)", "", OPTION_FLAG_DISABLED)
+    AddTextOption("How far each kind of story may", "", OPTION_FLAG_DISABLED)
+    AddTextOption("reach for its NPC.", "", OPTION_FLAG_DISABLED)
+    AddTextOption("Defaults differ: see the help text", "", OPTION_FLAG_DISABLED)
 
+    ; The defaults of StoryEngine's HoldPolicy properties (they differ by type).
     Int pSeek = 1
-    Int pInformant = 1
-    Int pRoad = 1
+    Int pInformant = 6
+    Int pRoad = 0
     Int pAmbush = 1
     Int pStalker = 1
-    Int pMessage = 1
-    Int pQuest = 1
+    Int pMessage = 2
+    Int pQuest = 0
     If Core != None && Core.StoryEngine != None
         pSeek = Core.StoryEngine.HoldPolicySeekPlayer
         pInformant = Core.StoryEngine.HoldPolicyInformant
@@ -618,64 +641,64 @@ Function ShowHoldRestrictionsPage()
     EndIf
 
     ; ---- Left column (4 groups × 8 rows = 32 = exactly at SkyUI limit) ----
-    AddHeaderOption("Seek Player")
+    AddHeaderOption("Someone comes to see you")
     OID_HoldSeekNone = AddToggleOption("No restriction", pSeek == 0)
     OID_HoldSeekCivilian = AddToggleOption("Same hold (civilians)", pSeek == 1)
     OID_HoldSeekExceptFollower = AddToggleOption("Same hold (except followers)", pSeek == 2)
     OID_HoldSeekAll = AddToggleOption("Same hold (everyone)", pSeek == 3)
     OID_HoldSeekLocalCivilian = AddToggleOption("Same town (civilians)", pSeek == 4)
-    OID_HoldSeekLocalExceptFollower = AddToggleOption("Same town (-followers)", pSeek == 5)
+    OID_HoldSeekLocalExceptFollower = AddToggleOption("Same town (except followers)", pSeek == 5)
     OID_HoldSeekLocalAll = AddToggleOption("Same town (everyone)", pSeek == 6)
-    AddHeaderOption("Informant")
+    AddHeaderOption("Someone brings a rumor")
     OID_HoldInformantNone = AddToggleOption("No restriction", pInformant == 0)
     OID_HoldInformantCivilian = AddToggleOption("Same hold (civilians)", pInformant == 1)
-    OID_HoldInformantExceptFollower = AddToggleOption("Same hold (-followers)", pInformant == 2)
+    OID_HoldInformantExceptFollower = AddToggleOption("Same hold (except followers)", pInformant == 2)
     OID_HoldInformantAll = AddToggleOption("Same hold (everyone)", pInformant == 3)
     OID_HoldInformantLocalCivilian = AddToggleOption("Same town (civilians)", pInformant == 4)
-    OID_HoldInformantLocalExceptFollower = AddToggleOption("Same town (-followers)", pInformant == 5)
+    OID_HoldInformantLocalExceptFollower = AddToggleOption("Same town (except followers)", pInformant == 5)
     OID_HoldInformantLocalAll = AddToggleOption("Same town (everyone)", pInformant == 6)
-    AddHeaderOption("Road Encounter")
+    AddHeaderOption("A meeting on the road")
     OID_HoldRoadNone = AddToggleOption("No restriction", pRoad == 0)
     OID_HoldRoadCivilian = AddToggleOption("Same hold (civilians)", pRoad == 1)
-    OID_HoldRoadExceptFollower = AddToggleOption("Same hold (-followers)", pRoad == 2)
+    OID_HoldRoadExceptFollower = AddToggleOption("Same hold (except followers)", pRoad == 2)
     OID_HoldRoadAll = AddToggleOption("Same hold (everyone)", pRoad == 3)
     OID_HoldRoadLocalCivilian = AddToggleOption("Same town (civilians)", pRoad == 4)
-    OID_HoldRoadLocalExceptFollower = AddToggleOption("Same town (-followers)", pRoad == 5)
+    OID_HoldRoadLocalExceptFollower = AddToggleOption("Same town (except followers)", pRoad == 5)
     OID_HoldRoadLocalAll = AddToggleOption("Same town (everyone)", pRoad == 6)
-    AddHeaderOption("Ambush")
+    AddHeaderOption("An ambush")
     OID_HoldAmbushNone = AddToggleOption("No restriction", pAmbush == 0)
     OID_HoldAmbushCivilian = AddToggleOption("Same hold (civilians)", pAmbush == 1)
-    OID_HoldAmbushExceptFollower = AddToggleOption("Same hold (-followers)", pAmbush == 2)
+    OID_HoldAmbushExceptFollower = AddToggleOption("Same hold (except followers)", pAmbush == 2)
     OID_HoldAmbushAll = AddToggleOption("Same hold (everyone)", pAmbush == 3)
     OID_HoldAmbushLocalCivilian = AddToggleOption("Same town (civilians)", pAmbush == 4)
-    OID_HoldAmbushLocalExceptFollower = AddToggleOption("Same town (-followers)", pAmbush == 5)
+    OID_HoldAmbushLocalExceptFollower = AddToggleOption("Same town (except followers)", pAmbush == 5)
     OID_HoldAmbushLocalAll = AddToggleOption("Same town (everyone)", pAmbush == 6)
 
     ; ---- Right column (3 groups × 8 rows = 24, under 32) ----
     SetCursorPosition(1)
-    AddHeaderOption("Stalker")
+    AddHeaderOption("Someone follows you unseen")
     OID_HoldStalkerNone = AddToggleOption("No restriction", pStalker == 0)
     OID_HoldStalkerCivilian = AddToggleOption("Same hold (civilians)", pStalker == 1)
-    OID_HoldStalkerExceptFollower = AddToggleOption("Same hold (-followers)", pStalker == 2)
+    OID_HoldStalkerExceptFollower = AddToggleOption("Same hold (except followers)", pStalker == 2)
     OID_HoldStalkerAll = AddToggleOption("Same hold (everyone)", pStalker == 3)
     OID_HoldStalkerLocalCivilian = AddToggleOption("Same town (civilians)", pStalker == 4)
-    OID_HoldStalkerLocalExceptFollower = AddToggleOption("Same town (-followers)", pStalker == 5)
+    OID_HoldStalkerLocalExceptFollower = AddToggleOption("Same town (except followers)", pStalker == 5)
     OID_HoldStalkerLocalAll = AddToggleOption("Same town (everyone)", pStalker == 6)
-    AddHeaderOption("Message")
+    AddHeaderOption("A message is delivered")
     OID_HoldMessageNone = AddToggleOption("No restriction", pMessage == 0)
     OID_HoldMessageCivilian = AddToggleOption("Same hold (civilians)", pMessage == 1)
-    OID_HoldMessageExceptFollower = AddToggleOption("Same hold (-followers)", pMessage == 2)
+    OID_HoldMessageExceptFollower = AddToggleOption("Same hold (except followers)", pMessage == 2)
     OID_HoldMessageAll = AddToggleOption("Same hold (everyone)", pMessage == 3)
     OID_HoldMessageLocalCivilian = AddToggleOption("Same town (civilians)", pMessage == 4)
-    OID_HoldMessageLocalExceptFollower = AddToggleOption("Same town (-followers)", pMessage == 5)
+    OID_HoldMessageLocalExceptFollower = AddToggleOption("Same town (except followers)", pMessage == 5)
     OID_HoldMessageLocalAll = AddToggleOption("Same town (everyone)", pMessage == 6)
-    AddHeaderOption("Quest")
+    AddHeaderOption("Someone has work for you")
     OID_HoldQuestNone = AddToggleOption("No restriction", pQuest == 0)
     OID_HoldQuestCivilian = AddToggleOption("Same hold (civilians)", pQuest == 1)
-    OID_HoldQuestExceptFollower = AddToggleOption("Same hold (-followers)", pQuest == 2)
+    OID_HoldQuestExceptFollower = AddToggleOption("Same hold (except followers)", pQuest == 2)
     OID_HoldQuestAll = AddToggleOption("Same hold (everyone)", pQuest == 3)
     OID_HoldQuestLocalCivilian = AddToggleOption("Same town (civilians)", pQuest == 4)
-    OID_HoldQuestLocalExceptFollower = AddToggleOption("Same town (-followers)", pQuest == 5)
+    OID_HoldQuestLocalExceptFollower = AddToggleOption("Same town (except followers)", pQuest == 5)
     OID_HoldQuestLocalAll = AddToggleOption("Same town (everyone)", pQuest == 6)
 EndFunction
 
@@ -683,7 +706,7 @@ String Function ConfirmModeLabel(Int mode)
     If mode == 0
         return "Disabled"
     ElseIf mode == 1
-        return "Followers Only"
+        return "Followers only"
     ElseIf mode == 2
         return "Everyone"
     EndIf
@@ -763,7 +786,8 @@ Function ToggleSkipFollower(Int optionId, String propName)
         current = Core.StoryEngine.SkipFollowerScheduleMeeting
         Core.StoryEngine.SkipFollowerScheduleMeeting = !current
     EndIf
-    SetToggleOptionValue(optionId, !current)
+    ; The option shows "followers can do it": the opposite of the new skip value (!current), so `current`.
+    SetToggleOptionValue(optionId, current)
 EndFunction
 
 Function SetHoldPolicy(String storyType, Int optionId, Int oidNone, Int oidCivilian, Int oidExceptFollower, Int oidAll, Int oidLocalCivilian, Int oidLocalExceptFollower, Int oidLocalAll)
@@ -951,6 +975,12 @@ Event OnOptionSelect(Int optionId)
         ElseIf !newVal && Core != None && Core.Politics != None
             Core.Politics.StopScheduler()
         EndIf
+    ElseIf optionId == OID_PEIntegration
+        IntelEngine.SetPEIntegration(!IntelEngine.GetPEIntegration())
+        SetToggleOptionValue(OID_PEIntegration, IntelEngine.GetPEIntegration())
+    ElseIf optionId == OID_PEReactions
+        IntelEngine.SetPEReactionsMoveRelations(!IntelEngine.GetPEReactionsMoveRelations())
+        SetToggleOptionValue(OID_PEReactions, IntelEngine.GetPEReactionsMoveRelations())
 
     ElseIf optionId == OID_StoryForceRestart
         If Core != None
@@ -1097,7 +1127,7 @@ Event OnOptionSliderOpen(Int optionId)
         EndIf
         SetSliderDialogStartValue(currentValue)
         SetSliderDialogDefaultValue(800.0)
-        SetSliderDialogRange(400.0, 2000.0)
+        SetSliderDialogRange(300.0, 2000.0)
         SetSliderDialogInterval(100.0)
     ElseIf optionId == OID_StoryEngineInterval
         SetSliderDialogStartValue(Core.GetStoryEngineInterval())
@@ -1233,51 +1263,51 @@ EndEvent
 
 Event OnOptionHighlight(Int optionId)
     If optionId == OID_DebugMode
-        SetInfoText("Enable debug notifications and logging.")
+        SetInfoText("Shows what IntelEngine does as notices on screen. The Papyrus log has it either way. For more in the DLL's own log (IntelEngine.log), set DebugLevel=4 in IntelEngine.ini.")
     ElseIf optionId == OID_MaxTasks
         SetInfoText("Maximum number of NPCs that can be on tasks at once.")
     ElseIf optionId == OID_DefaultWaitHours
-        SetInfoText("How many game hours NPCs wait at travel destinations before returning home. Does not affect scheduled meetings (those use Meeting Timeout).")
+        SetInfoText("How many game hours NPCs wait at travel destinations before returning home. Does not affect scheduled meetings (those use \"Wait for you at a meeting\").")
     ElseIf optionId == OID_ResetAllTasks
         SetInfoText("Force reset all active tasks. NPCs will return to their normal routines.")
     ElseIf optionId == OID_ConfirmGoToLocation || optionId == OID_ConfirmDeliverMessage || \
            optionId == OID_ConfirmFetchPerson || optionId == OID_ConfirmEscortTarget || \
            optionId == OID_ConfirmSearchForActor || optionId == OID_ConfirmScheduleFetch || \
            optionId == OID_ConfirmScheduleDelivery || optionId == OID_ConfirmScheduleMeeting
-        SetInfoText("Click to cycle: Disabled / Followers Only / Everyone. Controls whether a confirmation prompt appears before this action. Followers Only = only prompts when the acting NPC is your active follower.")
+        SetInfoText("Click to cycle: Disabled / Followers only / Everyone. Controls whether a confirmation prompt appears before this action. Followers only = only prompts when the acting NPC is your active follower.")
     ElseIf optionId == OID_SkipFollowerGoToLocation || optionId == OID_SkipFollowerDeliverMessage || \
            optionId == OID_SkipFollowerFetchPerson || optionId == OID_SkipFollowerEscortTarget || \
            optionId == OID_SkipFollowerSearchForActor || optionId == OID_SkipFollowerScheduleFetch || \
            optionId == OID_SkipFollowerScheduleDelivery || optionId == OID_SkipFollowerScheduleMeeting
-        SetInfoText("When enabled, silently blocks this action for active followers. The action is denied before any confirmation prompt.")
+        SetInfoText("On (default): your active followers can be given this action. Off: it is silently refused for them, before any confirmation prompt.")
     ElseIf optionId == OID_DeliveryReportBack
         SetInfoText("When enabled, messengers return to you after delivering a message off-screen and report back.")
     ElseIf optionId == OID_MeetingTimeoutHours
         SetInfoText("How long an NPC waits at the meeting spot after the scheduled time before giving up. If you're later than this, the meeting is cancelled.")
     ElseIf optionId == OID_MeetingGracePeriod
-        SetInfoText("Arrival tolerance for meetings (±hours). Handles Dynamic Time Scaling mods. Default 0.5 (30 minutes). Set higher if using variable timescales.")
+        SetInfoText("Arriving within this time after the agreed hour still counts as on time. Default 0.5 (30 minutes). Set it higher with a mod that changes the timescale as you play.")
     ElseIf optionId == OID_LingerReleaseDistance
         SetInfoText("How far (game units) you must walk away before an NPC stops lingering and returns to normal. Affects all systems: travel arrivals, task completions, story encounters. Default 800.")
     ElseIf optionId == OID_CancelAllSchedules
         SetInfoText("Cancel all scheduled meetings and tasks.")
     ElseIf optionId == OID_StoryEngineEnabled
-        SetInfoText("Enable the Story Engine. NPCs with unfinished business will autonomously seek you out based on your shared history.")
+        SetInfoText("The Story Engine (the dungeon master). NPCs with unfinished business will autonomously seek you out based on your shared history.")
     ElseIf optionId == OID_StoryEngineInterval
         SetInfoText("How often (in game hours) the Story Engine checks for NPCs with compelling reasons to find you.")
     ElseIf optionId == OID_StoryEngineCooldown
         SetInfoText("How long (game hours) a picked NPC's priority stays reduced. Higher = more variety in NPC picks, lower = favorites return sooner.")
     ElseIf optionId == OID_StoryLongAbsence
-        SetInfoText("Minimum game days since your last interaction with an NPC before the Story Engine considers them as a candidate.")
+        SetInfoText("Minimum game days since your last interaction with an NPC before the Story Engine considers them as a candidate. An NPC who has just come to you is left alone for at least as long.")
     ElseIf optionId == OID_StoryMaxTravel
         SetInfoText("Maximum game days an NPC will travel before being teleported to the target. Lower = faster delivery, higher = more realistic.")
     ElseIf optionId == OID_AllowStuckTeleport
-        SetInfoText("When enabled, NPCs stuck during travel or exceeding the max travel time are teleported to the target. When disabled, the NPC gives up instead.")
+        SetInfoText("When enabled, NPCs stuck during travel or on the way for longer than \"Longest journey\" are teleported to the target. When disabled, the NPC gives up instead.")
     ElseIf optionId == OID_DangerAllowAll
-        SetInfoText("No danger zone filtering. All NPC types can visit you in dungeons and caves.")
+        SetInfoText("No danger zone filtering. All NPC types can visit you in dungeons and caves. Informants always turn back.")
     ElseIf optionId == OID_DangerBlockCivilians
-        SetInfoText("Farmers, merchants and other civilians stay away from dangerous locations. Warriors and mages can still visit.")
+        SetInfoText("Farmers, merchants and other civilians stay away from dangerous locations. Warriors and mages can still visit. Informants always turn back.")
     ElseIf optionId == OID_DangerFollowersOnly
-        SetInfoText("Only NPCs who can be recruited as followers (PotentialFollowerFaction) can visit you in dangerous locations.")
+        SetInfoText("Only NPCs who can be recruited as followers (PotentialFollowerFaction) can visit you in dangerous locations. Informants always turn back.")
     ElseIf optionId == OID_DangerBlockAll
         SetInfoText("Nobody visits you in dangerous locations (dungeons, caves, etc).")
     ElseIf optionId == OID_HomeAllowAll
@@ -1291,23 +1321,25 @@ Event OnOptionHighlight(Int optionId)
     ElseIf optionId == OID_QuestExpiryDays
         SetInfoText("How many in-game days before an unfinished dynamic quest auto-expires. The quest giver remembers you never showed up. Default 1.")
     ElseIf optionId == OID_TypeSeekPlayer
-        SetInfoText("NPC travels to find you based on shared history or unfinished business.")
+        SetInfoText("NPC travels to find you based on shared history or unfinished business. The Director and the log call this type \"Seek Player\".")
     ElseIf optionId == OID_TypeInformant
-        SetInfoText("NPC approaches you to relay gossip about a third party.")
+        SetInfoText("NPC approaches you to relay gossip about a third party. The Director and the log call this type \"Informant\".")
     ElseIf optionId == OID_TypeRoadEncounter
-        SetInfoText("NPC appears on the road nearby, coincidentally traveling. Exterior only.")
+        SetInfoText("NPC appears on the road nearby, coincidentally traveling. Exterior only. The Director and the log call this type \"Road Encounter\".")
     ElseIf optionId == OID_TypeAmbush
-        SetInfoText("Hostile NPC stalks and attacks you. Requires combat class and hostile memories.")
+        SetInfoText("Hostile NPC stalks and attacks you. Requires combat class and hostile memories. The Director and the log call this type \"Ambush\".")
+    ElseIf optionId == OID_TypeFactionAmbush
+        SetInfoText("A faction you stand badly with sends soldiers to waylay you. The Director and the log call this type \"Faction Ambush\".")
     ElseIf optionId == OID_TypeStalker
-        SetInfoText("Romantic or jealous NPC secretly follows you. Exterior only.")
+        SetInfoText("Romantic or jealous NPC secretly follows you. Exterior only. The Director and the log call this type \"Stalker\".")
     ElseIf optionId == OID_TypeMessage
-        SetInfoText("NPC delivers a verbal message, optionally with a meeting invitation.")
+        SetInfoText("NPC delivers a verbal message, optionally with a meeting invitation. The Director and the log call this type \"Message\".")
     ElseIf optionId == OID_TypeQuest
-        SetInfoText("NPC asks you to kill enemies at a location. Courier or guide delivery.")
+        SetInfoText("NPC asks you to kill enemies at a location. Courier or guide delivery. The Director and the log call this type \"Quest\".")
     ElseIf optionId == OID_TypeNPCInteraction
-        SetInfoText("Two NPCs interact: argue, trade, train, bond. Visible or off-screen.")
+        SetInfoText("Two NPCs interact: argue, trade, train, bond. Visible or off-screen. The Director and the log call this type \"NPC Interaction\".")
     ElseIf optionId == OID_TypeNPCGossip
-        SetInfoText("One NPC shares a rumor about a third party with another NPC.")
+        SetInfoText("One NPC shares a rumor about a third party with another NPC. The Director and the log call this type \"NPC Gossip\".")
     ElseIf optionId == OID_StoryForceRestart
         SetInfoText("Force restart all monitoring loops. Use if story ticks seem frozen or NPCs stop acting.")
     ElseIf optionId == OID_NPCTickEnabled
@@ -1315,7 +1347,7 @@ Event OnOptionHighlight(Int optionId)
     ElseIf optionId == OID_NPCTickInterval
         SetInfoText("How often (game hours) the NPC social system checks for NPC-to-NPC interactions.")
     ElseIf optionId == OID_NPCSocialCooldown
-        SetInfoText("How long (game hours) before an NPC can be picked for another social interaction. Separate from story cooldown.")
+        SetInfoText("How long (game hours) before an NPC can be picked for another social interaction. Separate from the stories' \"Long absence\".")
     ElseIf optionId == OID_QuestCombat
         SetInfoText("Enable 'clear enemies' quest type. NPC asks you to kill bandits, draugr, or dragons at a location.")
     ElseIf optionId == OID_QuestRescue
@@ -1334,8 +1366,39 @@ Event OnOptionHighlight(Int optionId)
         SetInfoText("Enable the autonomous faction politics system. Factions trade, negotiate, scheme, and go to war based on LLM-driven decisions.")
     ElseIf optionId == OID_PoliticsTickInterval
         SetInfoText("How often (in game hours) the Political DM evaluates faction relations and generates events. Default 6.")
+    ElseIf optionId == OID_PEIntegration
+        SetInfoText("Experimental, off by default. Needs the mod Political Engine and does nothing without it. When on, its realms, rulers and campaign news feed IntelEngine's politics. Load a save after turning it on: the realms are added at game start and on load.")
+    ElseIf optionId == OID_PEReactions
+        SetInfoText("Only matters with Political Engine integration on. When off, reactions to Political Engine's news are recorded without changing faction relations or your standing.")
+    Else
+        String holdDefault = HoldDefaultText(optionId)
+        If holdDefault != ""
+            SetInfoText(holdDefault)
+        EndIf
     EndIf
 EndEvent
+
+String Function HoldDefaultText(Int optionId)
+    {Help text of a Hold Restrictions option: what it limits, and the default of its story type. The page used
+    to say "Default: Same Hold (Civilians)" for all seven types, which is true for three.}
+    String what = "Which NPCs may come from further away for this kind of story. "
+    If optionId >= OID_HoldSeekNone && optionId <= OID_HoldSeekLocalAll
+        Return what + "Default for \"Someone comes to see you\": Same hold (civilians)."
+    ElseIf optionId >= OID_HoldInformantNone && optionId <= OID_HoldInformantLocalAll
+        Return what + "Default for \"Someone brings a rumor\": Same town (everyone)."
+    ElseIf optionId >= OID_HoldRoadNone && optionId <= OID_HoldRoadLocalAll
+        Return what + "Default for \"A meeting on the road\": No restriction."
+    ElseIf optionId >= OID_HoldAmbushNone && optionId <= OID_HoldAmbushLocalAll
+        Return what + "Default for \"An ambush\": Same hold (civilians)."
+    ElseIf optionId >= OID_HoldStalkerNone && optionId <= OID_HoldStalkerLocalAll
+        Return what + "Default for \"Someone follows you unseen\": Same hold (civilians)."
+    ElseIf optionId >= OID_HoldMessageNone && optionId <= OID_HoldMessageLocalAll
+        Return what + "Default for \"A message is delivered\": Same hold (except followers)."
+    ElseIf optionId >= OID_HoldQuestNone && optionId <= OID_HoldQuestLocalAll
+        Return what + "Default for \"Someone has work for you\": No restriction."
+    EndIf
+    Return ""
+EndFunction
 
 ; =============================================================================
 ; UTILITY

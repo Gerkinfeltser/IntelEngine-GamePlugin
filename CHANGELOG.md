@@ -1,5 +1,188 @@
 # Changelog
 
+## 3.8.1 — 2026-11-14
+
+Fixes for things you notice in play, by Galanx. Install over 3.8.0; saves and settings carry over.
+
+### NPCs on a task
+
+- NPCs no longer dawdle before they leave. Whether an NPC "has not set off" or "is stuck" was not looked at while they had a dialogue target, and SkyrimNet leaves that set to whoever they last chatted with, for minutes. On a full load order many NPCs therefore stood where they were (one at the inn's door for three minutes, twice) until the task's time limit ended it. The two checks now stand down only for an NPC who is really held by talk: in the game's dialogue menu with you, speaking, about to speak, or having finished a line a moment ago.
+- An NPC no longer calls off a task you gave them by themselves. Their own cancel was refused while you stood near and taken when you were away, which is exactly when nobody can have told them to stop: the AI answered the line about their setting off with "stop current task", and the NPC you had sent never arrived (seen twice in a row, 47 and 52 seconds into a trip). Away from you it now counts only when you have just said something within earshot ("Come back!"). Cancelling from the dashboard, the MCM or SkyrimNet's package page works as before.
+- The cancel action's description tells the AI the same thing: it is for when you tell them to stop, not for when they have set off, arrived or lost interest.
+
+### How a battle ends
+- When a battle is over the field empties the way a field does: the fighting stops, the beaten run for it, the winners put their weapons away and walk off, each side its own way. Until now nobody was told the battle was over. The survivors stood where the fighting had stopped, and three minutes later every soldier and every body was removed in one stroke, wherever you were looking.
+- Nobody is taken out of the world in your view any more. A soldier who has walked off is removed once you cannot see them: out of the loaded area, or far off and off screen.
+- The dead stay where they fell for six hours of game time, also when you step indoors or travel away and come back. After that they are cleared away when you are not looking. (Skyrim itself keeps only about fifteen dead in one place: after a big battle it removes the others on its own, as it always has. In three test battles 14 of 25 to 29 dead were left after three minutes.)
+- After a battle you fought in, one of your side comes over and says a word, then follows the others. Instead you were always told "none of your allies remain to celebrate", with your allies standing around you. If your side fought too far from you for anyone to come over, nothing is said.
+- The stand-down comes first and the announcement after it. The fighting used to go on through the pause and the announcement of who had won.
+- The battle script gets hold of its soldiers. It asked the DLL for them under the name "formIds"; the game keeps one spelling per string and handed over "formIDs", the spelling of a variable in another IntelEngine script, and the DLL answered with nothing. So the script never knew a single soldier of any battle: it could not start the first clash (the log's "Kick-started 0/6 combat pairs"; the soldiers found each other on their own), and it had nobody to send home at the end. The DLL now matches such names in any spelling.
+- Two armies raised from the same soldier list fight each other. Members of one list are friends through the faction they come with, which outranked the two battle sides: both armies stood side by side (seen with both sides from the bandit list). A soldier now belongs to their battle side alone.
+- When a faction's soldier list is not there, the battle no longer goes straight to bandits. The on-screen battle now looks a list up the way every other spawn does (by name, by enumeration, by name prefix for the lists a Requiem-style overhaul replaces, by the form id of the stock lists in Skyrim.esm); it used to try the name alone. A list that is found but yields nobody counts as missing. A faction without a usable list raises its first ally's soldiers: the Political Engine realms come without a list, so a realm allied to the Legion now fields Legion soldiers where both armies used to be bandits. Generic bandits are the last resort, and they do fight now (see above). `soldier_template` can also be written as a form id ("0x0001FC5B", or "MyMod.esp|0x000801" for a mod's list).
+- A battle that begins within three minutes of the last one can no longer be reset by the earlier battle's wind-up.
+- A battle that is cut short (its time limit, a save loaded in the middle of it) ends the same way: the soldiers walk off instead of vanishing on the spot.
+
+## 3.8.0 — 2026-11-14
+
+### Contributors
+- **Gerkinfeltser** developed 3.8: the sections Director, Story travel and arrival, Stories and NPC scenes, Off-screen placement and fetch, Politics and Other below, with the Magelight prompts, the Political Engine bridge and the faction fragments.
+- **Lanosity** wrote the natural-language time parser.
+- **Galanx** reviewed the release and wrote the sections Stuck NPCs and package handling, Meetings and visits, Prompts, dashboard and controller, Wars that end stay ended, Working with SkyrimNet, Assassins and soldiers that turned on the player, and Fixes to 3.8 changes found in review.
+
+### Director
+- Director-dispatched actions no longer show the Allow/Deny confirmation (the per-action "What followers can be asked to do" setting still applies).
+- Story replacement accepts Director fields and explains refusals; a cancelling story must finish before it is replaced.
+- Generate requires real NPC names and no longer makes another NPC approach you in informant narration; NPC suggestions rank exact names first.
+- When an NPC can't be sent because they aren't loaded (they only exist near their home), the Director now says so instead of "no unique match".
+- The dashboard hotkey is ignored while you type in a text field.
+- "Skip Action for Followers" is now "What followers can be asked to do" in the MCM, on the dashboard and on SkyrimNet's settings page, with every action on by default. Nothing changes in what followers do: the old list of switches that were off read as if the actions were switched off for followers.
+- Informant stories have their own form: Informant NPC, Subject (an NPC, a faction or you), optional Source and a required one-sentence Rumor. IE writes the informant's line, so there is no Narration field.
+- A rumour is refused, with the reason, when it doesn't name the Subject as a whole word ("Ria" inside "Victoria" doesn't count) or starts with an -ing word.
+- NPC Social gossip has a Subject field; the rumour is stored as "<Subject> <what they did>".
+- The story type is never chosen by the LLM: a type left on (auto) must be picked before Dispatch, and Generate fills only that type's fields.
+- Generated interaction narration describes the scene instead of copying a fact; generated gossip says how and where it was told.
+- A social scene for two NPCs already standing together near you plays right there (it used to be applied off-screen).
+- With Magelight UI installed, the Allow/Deny, door-knock and quest-offer prompts open as a Magelight page in the dashboard's style (keys 1-3, Esc = the do-nothing answer, timer bar on the knock). A prompt waits while the dashboard or another Magelight window is open. Without Magelight, the Papyrus MessageBox is used as before; it is now only needed without Magelight.
+- Director quests need a Plea for help (and a Victim for rescue, an Item description for find_item) before Dispatch; Generate no longer picks the current location or a player home as the quest location.
+
+### Story travel and arrival
+- A story NPC counts as arrived after 15 seconds within talking range.
+- Arrival timers use real time; a late NPC is re-placed once behind the target, then the story aborts with a notice.
+- Story arrival waits until save-load recovery finishes. Director stories ignore the Hold Restriction; automatic stories still turn back and say why.
+- Story NPCs who become your teammate are released from linger; linger timeouts survive pausing.
+- Lingering NPCs are released after one game hour, so waiting or sleeping frees them (see "Meetings and visits" below for how that limit works now); the linger release distance keeps its default of 800, with the minimum lowered to 300.
+- The story watchdog no longer marks an NPC who already arrived as "never finished", and strips travel packages when it resets a story.
+
+### Stories and NPC scenes
+- NPC-to-NPC scenes are narrated only within SkyrimNet's hearing range; otherwise the pair waits for you and plays when you come close, or is applied as facts only when it times out.
+- An informant's rumour is one checked sentence; IE builds the arrival line from it, and the informant remembers why they came.
+- Two NPCs with the same name (two "Gamlunda"s) resolve to the one the DM was shown.
+- Spawned actors (battle soldiers, ambushers) are never picked for stories or gossip.
+- The Story DM sees which story types each candidate can take, and a Markdown code fence around its reply no longer breaks validation.
+- A seek_player story's memory is no longer added twice.
+
+### Off-screen placement and fetch
+- NPCs travelling while unloaded are now placed near the target when their estimated travel time runs out (they used to walk on indefinitely).
+- A fetched NPC walking toward you is no longer sent home early, and one already beside you is no longer teleported away across an exterior cell boundary.
+
+### Politics
+- New `war_allowed:` section in factions.yaml decides which faction pairs may go to war (default: any two factions of type `military`, so guilds and families stay out of it). Entries can be faction ids, display names, types or `*`. Political Engine realms never go to war.
+- When the Political DM ignores the "declare war" rule for the most hostile allowed pair, IE declares the war itself (skipping factions whose leaders are all dead); war declarations for pairs that aren't allowed are refused.
+- The Empire and the Aldmeri Dominion are neutral to each other: the Legion and the Thalmor are no longer allies, and their starting relation is 15 (was 50).
+- A battle result for two factions that aren't at war is recorded as a border skirmish, and no soldiers spawn.
+- Fighters left standing after a brawl or skirmish are removed shortly after it ends (they used to stay in the world forever).
+- Loading a save resyncs the "at war" flags with the save's actual wars.
+- Major political news (wars, battles, treaties, Political Engine developments) reaches every NPC; smaller events reach the factions involved and, for political factions, people in their hold. Repeated events show once with "(reported N times)".
+- The Political DM no longer repeats one war's battle, counts a scheduled battle as that war's battle for one game day, and is told which wars can't have a battle yet.
+- Political Engine: realm rulers (including puppet realms) are shown as faction leaders; a realm without a ruler clears its leader; a ruler change becomes news; IE resyncs when Political Engine (re)loads; realm allies and rivals follow live sides; factions can set `pe_side` (the Thalmor map to the Aldmeri Dominion).
+- The dashboard colours faction names by Political Engine side and labels your own puppet and vassal realms.
+- The Politics Enabled toggle comes first in the Faction Politics MCM page.
+- Director Politics: a surrender names the Surrendering faction and the Victor, and is refused unless the two are at war; Generate never drafts war declarations, surrenders or peace offers.
+
+### Other
+- Battles no longer stop the story and quest timers when they reset.
+- Soft stuck recovery no longer waits on latent calls; stuck detection samples at most every three seconds.
+- Informant gossip keeps the subject's name.
+- Notifications and Papyrus log lines use plain dashes (em dashes showed as "â€”").
+- Political Engine integration is off by default and marked experimental. It needs the mod Political Engine and does nothing without it (the dashboard greys the switches out then). Switch it on in the MCM (Faction Politics), on the dashboard's Settings tab or on SkyrimNet's plugin settings page; a `settings.yaml` that already says `pe_integration: true` keeps it on. Its realms join the factions on the next load.
+- Optional Political Engine API v3 bridge: public campaign news reaches the Political DM as faction-less rumors, with one organization reaction per development and a persisted MCM/dashboard toggle for reaction relation changes. IE's own wars and battles are unaffected.
+- Faction fragments: extra `factions.d/*.yaml` files add or replace factions and relations; a Political Engine fragment adds the nine vanilla realms as factions, with live rulers and the player's realm passed to the Political DM, when Political Engine is active.
+- Action and scheduling prompts ask for exact in-game place names in the game's language.
+- Extra travel and Director diagnostics at DebugLevel 4.
+
+### Stuck NPCs and package handling
+- All monitoring runs on one shared timer with one owner. Scripts used to cancel or re-arm it for each other: switching the story engine off, or a battle ending, could freeze every trip, task and schedule.
+- A task slot that changed hands while a handler was waiting is no longer wiped or marked "arrived" by the old handler; half-finished slots are cleaned up hourly.
+- An hourly sweep releases NPCs who still run an IntelEngine package with no task behind it; "Reset all tasks" in the MCM does the same at once.
+- NPCs with no routine of their own (many mod-added NPCs) are walked home when a trip, meeting, task or visit ends, instead of standing where it ended.
+- No recovery move happens in the player's view: a stuck NPC who is being watched gets a fresh path instead of a hop, and unseen arrivals come in through the door indoors or from behind outdoors. "Behind the player" used to be "south of the player".
+- Indoors nobody is placed 2000 units away (outside the building's shell) or leapfrogged through a wall.
+- An NPC who is talking is not treated as stuck, and one who is asked to do something in conversation finishes the sentence before turning to go.
+- During a task IntelEngine removes only its own packages, so a follow or wait order from another mod survives the task. If such a package blocks a trip it is cleared and the trip goes on.
+- An unknown place name, an unknown target or no free slot no longer cancels the task the NPC already had.
+- Two NPCs given a task in the same instant no longer end up in the same task slot. The second one went, the first task was dropped without a word, and that NPC then refused the same request as "already on it". A slot is now taken in the step that picks it. (3.7.1 could do the same.)
+- Trips: a disabled NPC's trip ends; a long road walked together with the player is not cut off at seven hours; the time limit no longer restarts on every load.
+- Fetch, deliver, escort, search: a search has an overall limit and the searcher waits on the spot when you fall behind; an escort without "wait" lets the NPC go at the destination; a fetched NPC's visit ends on its own; waits are measured in seconds instead of monitoring passes; carriage drivers are never fetched or escorted.
+- Stories: a refused faction courier gets their aggression back; an ambusher gets their own essential flag, aggression and confidence back; quest enemies, bosses and ambush soldiers are removed once out of sight; a dead guide ends the guiding, not the quest; a visitor walks the last stretch; two NPCs stay together for the length of their scene.
+- Battles: spawned soldiers are remembered across a restart and removed; your crime factions are restored after a battle you joined; an assassin is no longer deleted at the moment of striking.
+- An NPC sent on a task while the inn's bard is singing no longer sits through the song first, and one caught by a song on the way out walks on. The game takes the people in the room into the bard's audience and holds them until the song is over, whatever they were told to do.
+- The inn's own bard can be sent on a task: he finishes the song he is singing, the next piece does not start, and he goes. He plays again the next time you come into the inn. He used to stay at his spot whatever he was told, because the game holds a performing bard in a scene.
+- An NPC the game is holding in a scene or a quest is not treated as stuck: no recovery moves, and no line about their feet catching on something from someone who has not left their chair.
+- That patience is for someone who is really held. An NPC whose travel package has gone missing gets it back at the next stuck check; they used to be left standing for two minutes first (found by Gerkinfeltser).
+- An NPC can no longer cancel the task they were just given with their own first reaction to it (a fetch was called off six seconds in, when the AI answered its start with "stop current task"). A task you cancel yourself ends at once, as before.
+- That protection covers the first 45 seconds of a task. For a task carried over in a save it could come back for 45 seconds in a later session; it is dropped when a game is loaded (found by Gerkinfeltser).
+- A message delivered out of your sight is reported back again when the messenger lives where you are waiting. They were back home before the handover was counted, so it was taken as delivered in front of you: no way back and no report.
+- A task that runs out of time is finished quietly when you cannot see the NPC, also when the game still has them loaded out in the street while you sit indoors (it keeps a town's outdoor cells in memory once you have walked through). It used to be called off as if you had been watching: an escort was cut off three times in one evening on a full load order.
+- An NPC who reaches a named building unseen is inside it, like one who walks there in view. They used to be left outside the door.
+- A quest whose guide you leave behind no longer stalls. With "Lead the way", the quest's enemies, captive or chest appear only once the guiding is over, and it ended only with the guide beside you at the place: go ahead into the dungeon and it held nothing of the quest until you came back out to her (and she was moved near the place again every three seconds meanwhile). The guiding now ends when she gets there unseen, and at once when you are there already.
+
+### Meetings and visits
+- An NPC who is already inside the meeting place has arrived (they were sent to its outside door and the meeting was called off).
+- A meeting is not called off because the NPC was talking, fighting or out of sight when it was time to leave.
+- An NPC waiting at the door while you are inside walks in (the order used to be re-issued every three seconds, so the walk never got anywhere).
+- After a load, an NPC waiting at a destination keeps their place.
+- A visit no longer ends one game hour in, whatever is being said. It lasts while the NPC is talking with you and a little after, and six game hours at most. This applies to meetings, errands, story visitors and fetched NPCs.
+- Times are understood in many more forms ("in 2 hours", "tomorrow at 6", "at dusk"). The natural-language time parser is by Lanosity.
+- More spellings of a time are read: a spelled-out hour with am or pm ("six a.m."), and a clock time with the part of the day ("6:30 in the evening" was taken for half past six in the morning). A bare hour for another day follows the waking hours: "tomorrow at 6" is the evening, "tomorrow at 9" the morning.
+
+### Prompts, dashboard and controller
+- The choice popup scales with the screen (4K, ultrawide, VR), answers on key release (Enter no longer leaks into the game), takes Left/Right and E, and takes a gamepad when Magelight's gamepad layer is there. Its footer says what Esc answers.
+- The task-permission prompt has a 20-second limit; no answer is a silent deny.
+- The dashboard has a larger layout and can be driven with a gamepad or the arrow keys.
+- A Director political event that is refused now says so (it showed "Sent" and did nothing).
+- The middle answer of a prompt reads "Deny" (it showed as "deny").
+- The MCM offered 500 as the default of "Visit ends when you walk away"; the default is 800. "Wait at a destination" moves in steps of one hour on the dashboard, as it does in the MCM.
+- One name per setting (asked for by Gerkinfeltser). The MCM, the dashboard and SkyrimNet's plugin settings page each had their own name for the same setting ("Max Travel Time", "Max Travel Time (days)", "Longest journey (days)"). All three now use the names of SkyrimNet's page, in plain words, and so do the README's tables. The same goes for the names of the options: "Followers only", "Block civilians only", "Same hold (except followers)". Some of what you will look for under a new name:
+  - Story types: "Seek Player" is "Someone comes to see you", "Informant" is "Someone brings a rumor", "Road Encounter" is "A meeting on the road", "Message" is "A message is delivered", "Quest" is "Someone has work for you", "Ambush" is "An ambush", "Faction Ambush" is "A faction's patrol hunts you", "Stalker" is "Someone follows you unseen". The Director, the notices and the log keep the short names, and each switch's help text says which one it is. (Two of these showed in lower case in the MCM before.)
+  - Tasks: "Action Confirmation Prompts" is "Ask before starting", and the actions read "Go somewhere", "Deliver a message", "Fetch someone", "Escort someone", "Search for someone", "Arrange a meeting", "Fetch someone later", "Deliver a message later". "Max Concurrent Tasks" is "NPCs on a task at once", "Default Wait Hours" is "Wait at a destination", "NPC Release Distance" is "Visit ends when you walk away", "Meeting Timeout" is "Wait for you at a meeting", "Meeting Grace Period" is "On time until".
+  - Stories: "Enable Story Engine" is "Stories", "Max Travel Time" is "Longest journey", "Teleport on stuck/timeout" is "Move a stuck traveller along", "Quest Timeout" is "Quest expires after", "Danger Zone Visits" is "NPCs sent into dangerous places", "Player Home Visits" is "NPCs sent into your home", and the quest types are "Quest kinds" ("Clear out enemies", "Rescue someone", "Find an item", and the three for factions).
+  - NPCs among themselves: "Enable NPC Interactions" is "NPCs visit and talk to each other", with "Kind: one NPC goes to see another", "Kind: gossip passed on", "Check interval" and "Rest per NPC".
+  - Others: "Debug Mode" is "Debug messages"; Auto Dynamic Bio's "Enabled" is "Refresh an NPC's profile after much talk"; politics' "Tick Interval" is "Check interval".
+  - Nothing is stored under a name: your settings and your `settings.yaml` are untouched.
+- Settings that showed or said the wrong thing (found by Gerkinfeltser):
+  - The dashboard's switches for the two kinds of "NPCs among themselves" (one NPC goes to see another, gossip passed on) always showed ON; they show the real state now, and the two are no longer listed among the Story tab's story types.
+  - "Story NPC Cooldown" is gone from the MCM and the dashboard. The game used the longer of it and "Long absence", so with the default of three days its 6 to 72 hours changed nothing. "Long absence" is the setting.
+  - "Allow NPC death in rescue" is gone from the MCM and the dashboard: nothing read it, a rescue's victim is always kept alive.
+  - Hold Restrictions no longer claims "Default: Same Hold (Civilians)" for every story type (true for three of seven): the MCM names each type's default in the help text, the dashboard beside the type.
+  - The help of "Debug messages" (Debug Mode until now) says what it does (notices on screen; the Papyrus log has them either way) and points to DebugLevel=4 in IntelEngine.ini for the DLL's log.
+  - Dashboard sliders show as many decimals as their step has (0.25 days showed as 0.3).
+  - Director quest form: the fields that one sub-type needs (Victim, Item description) carry a yellow star until a sub-type is picked, then the red one or none.
+  - `min_event_interval_hours` is gone from settings.sample.yaml; nothing read it.
+  - The Hold Restrictions options read "(except followers)" throughout; six of the seven groups had "(-followers)".
+  - README: Danger Zone default, Story Check Interval, the Max Travel Time row, the quest sub-types, the hold defaults, the prompt's 20 seconds, and the visit clock that also ends a lingering visit. FAQ: the cooldown tip.
+
+### Wars that end stay ended
+- A war that ends leaves the two factions at an uneasy truce instead of still being at each other's throats, so the same pair no longer declares war again after every cooldown, a little worse off each time.
+- A war that ends by exhaustion or collapse is recorded as a surrender or a ceasefire, something NPCs can hear about and talk about. It used to end in the database only, with nothing in the world to show for it.
+- A faction's own `war_threshold` is honoured when a war is declared in code, not only when the Political DM proposes one.
+
+### Working with SkyrimNet
+- An NPC who is given a task in conversation finishes what they are saying before they set off, also when their answer is still being synthesized. IntelEngine now hears from SkyrimNet itself that a line is on its way; it used to ask the game whether the NPC's mouth was moving, which is not yet the case in those seconds, and wait seven seconds at most.
+- A running task shows on SkyrimNet's Package Manager page as a row of its own ("IntelEngine task: travel, Dragonsreach"). Remove on that page cancels the task cleanly, the way IntelEngine's own dashboard does, so an NPC you want back can be freed from either place. Needs a SkyrimNet with the package manager; older versions are left alone.
+- IntelEngine's settings are on SkyrimNet's dashboard too, on the plugin settings page: stories and their types, how far NPCs travel for each kind of story, quest kinds, NPCs among themselves, tasks and their confirmation prompts, meetings, politics. A change there takes effect in the running game when you press Save; a change in the MCM or on IntelEngine's own dashboard shows there a few seconds later.
+- These settings now belong to the installation, not to one save: a new game starts with what you set. A save from before this update keeps its own settings the first time it is loaded and writes them to the shared file.
+
+### Assassins and soldiers that turned on the player
+- An assassin sent after a faction leader goes for that leader and nobody else. They were made hostile to every neutral in reach, the player included, and attacked whoever stood nearest once the leader was down or out of reach.
+- The pause between an assassin reaching the leader and striking no longer runs into the cleanup timer. When the walk had taken fifteen seconds, the assassin was taken off the books during that pause and then struck anyway: an attacker nothing ever removed. This is the assassin that "kept attacking".
+- The attempt ends when the leader is dead, on their knees (leaders who cannot die) or gone; the assassin then stands down instead of looking for the next target. An attempt on a leader who has left the room is called off.
+- Soldiers spawned for a brawl or a skirmish fight each other and their factions' enemies, not bystanders. Several soldier types, and the stand-in used for Political Engine realms, attacked any neutral on sight.
+- Spawned fighters who survive their event put their weapons away, and are removed at once where nobody is looking.
+- A faction ambush only comes from a faction that is hostile to you (standing -40 or lower), and stays small until the feud is deep. The model could pick any enemy of one of your friends, or a faction that does not exist.
+- The people who remember an assassination attempt are those who stood around the victim. They were counted around you, so someone two rooms from the attack remembered having witnessed it, and the victim remembered having "witnessed an attempt on" a person with their own name; the victim now remembers being attacked.
+
+### Fixes to 3.8 changes found in review
+- NPC gossip without a subject no longer starts with a blank.
+- The second NPC of a scene resolves again when they are not in the first one's cell (the pair was dropped as unresolved).
+- A model answer with a field of the wrong type (`"gossip": null`) is rejected instead of ending the game.
+- An informant rumor may start with "During", "King", "Something" and similar words.
+- Choice popup: a lost race for the screen is noticed at once, a late entry no longer leaves the game paused on a hidden page, and a page that failed to load is not reused.
+- A pair of NPCs waiting for you to come within hearing waits for the full time, not thirty seconds.
+- A `factions.d` fragment with an unknown `requires:` line, or saved with a byte-order mark, is not loaded for everyone.
+- A battle in a plugin whose file name is not plain ASCII no longer throws while it is recorded.
+- An automatic story that is given up on (the NPC cannot reach you, or turns back at a hold border) says nothing on screen: it used to name a visitor you never saw setting out. A story you dispatched from the dashboard still reports back.
+- A story NPC counts as having reached you only on the same floor, as travel arrivals already did; they used to arrive and speak from the room below.
+
 ## 3.7.1 — 2026-11-04
 
 - The dashboard no longer goes blank when a game or mod name has invalid text encoding; it shows � instead.
