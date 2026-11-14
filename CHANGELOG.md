@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.8.2 — 2026-11-14
+
+Package-only release; DLL, ESP and scripts are unchanged from 3.8.1. Install over 3.8.0 or 3.8.1; saves and settings carry over.
+
+- The legacy save converter is no longer in the mod package. Upgrading a save from IntelEngine 3.5.2 or earlier? Download the unchanged converter separately: https://github.com/galanx/IntelEngine-GamePlugin/releases/tag/save-converter-1
+
 ## 3.8.1 — 2026-11-14
 
 Fixes for things you notice in play, by Galanx. Install over 3.8.0; saves and settings carry over.

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://qconsulting.ca/fo3/ModConfig5.0.xsd">
-    <moduleName>IntelEngine v3.8.1</moduleName>
+    <moduleName>IntelEngine v3.8.2</moduleName>
     <moduleImage path="fomod\IE-cover.jpg" />
 
     <requiredInstallFiles>
@@ -63,18 +63,16 @@ With Magelight, IE's choice prompts (Allow/Deny, door knock, quest offer) use a 
             <optionalFileGroups order="Explicit">
                 <group name="Upgrade tools" type="SelectAll">
                     <plugins order="Explicit">
-                        <plugin name="Legacy save converter">
+                        <plugin name="Legacy save converter (separate download)">
                             <description>Starting a fresh game? You don't need the converter.
-Upgrading a save from IntelEngine 3.5.2 or earlier:
+Upgrading a save from IntelEngine 3.5.2 or earlier? The converter is a separate download:
+https://github.com/galanx/IntelEngine-GamePlugin/releases/tag/save-converter-1
 1. Close Skyrim and back up the save's .ess and .skse.
-2. Drag the .ess onto Convert-IE-Save.bat in "IntelEngineTools" (MO2: right-click IntelEngine → Open in Explorer).
+2. Unzip the converter anywhere and drag the .ess onto Convert-IE-Save.bat.
 3. Start Skyrim and load the new "..._IEconverted" save.
 See FAQ.md in IntelEngineTools for more.</description>
                             <image path="fomod\IE-converter.jpg" />
-                            <files>
-                                <file source="IntelEngineTools\LegacyCacheMigration.exe" destination="IntelEngineTools\LegacyCacheMigration.exe" />
-                                <file source="IntelEngineTools\Convert-IE-Save.bat" destination="IntelEngineTools\Convert-IE-Save.bat" />
-                            </files>
+                            <files />
                             <typeDescriptor>
                                 <type name="Required"/>
                             </typeDescriptor>
