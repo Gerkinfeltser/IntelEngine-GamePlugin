@@ -34,6 +34,29 @@ Needs SKSE, SkyrimNet Beta 27+, PapyrusExtender, PapyrusUtil, SkyUI. (Full requi
                 </group>
             </optionalFileGroups>
         </installStep>
+        <installStep name="Optional">
+            <optionalFileGroups order="Explicit">
+                <group name="Extras" type="SelectAny">
+                    <plugins order="Explicit">
+                        <plugin name="Companions soldiers">
+                            <description>The Companions go to battle as Companions, not bandits: warriors in their own gear, mostly Nords, with Redguards, Orcs, Dark Elves, Wood Elves, an Imperial and a Breton among them.
+
+Installs IntelEngine-SoldierPack.esp and factions.d\companions_soldiers.yaml.
+
+That file replaces the whole Companions entry of IntelEngine's factions. While it is installed, changes you make to the Companions in your own factions.yaml are ignored: make them in companions_soldiers.yaml.
+
+Needs Face Discoloration Fix (Nexus 42441): the soldiers have no baked faces and show dark faces without it.</description>
+                            <files>
+                                <folder source="Optional\IntelEngine-SoldierPack" destination="" />
+                            </files>
+                            <typeDescriptor>
+                                <type name="Optional"/>
+                            </typeDescriptor>
+                        </plugin>
+                    </plugins>
+                </group>
+            </optionalFileGroups>
+        </installStep>
         <installStep name="Upgrading from IntelEngine 3.5.2 or earlier">
             <optionalFileGroups order="Explicit">
                 <group name="Upgrade tools" type="SelectAll">

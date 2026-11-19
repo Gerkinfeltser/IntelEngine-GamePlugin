@@ -1,0 +1,17 @@
+# Installed with the "Companions soldiers" option: the Companions raise the soldiers of IntelEngine-SoldierPack.esp.
+# A file here replaces the whole faction, so every field of the stock CompanionsFaction is repeated. While this file
+# is installed, changes to CompanionsFaction in your own factions.yaml are ignored: make them here instead.
+factions:
+  - id: "CompanionsFaction"
+    name: "The Companions"
+    type: "guild"
+    hold: "Whiterun"
+    skyrim_faction_id: "CompanionsFaction"
+    leader_names: ["Kodlak Whitemane", "Vilkas"]
+    rivals: []
+    allies: []
+    war_threshold: -60
+    conflict_style: "brawl"
+    soldier_template: "IESoldier_LCharCompAny"
+    prison_location: "WhiterunJorrvaskr"
+    prison_marker: [0, 0, 0]
