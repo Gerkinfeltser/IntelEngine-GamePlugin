@@ -13,5 +13,6 @@ factions:
     war_threshold: -60
     conflict_style: "brawl"
     soldier_template: "IESoldier_LCharCompAny"
+    home_marker: "Skyrim.esm|0x0BC0BF"   # C00JorrvaskrFightCenterPoint: survivors walk toward Jorrvaskr
     prison_location: "WhiterunJorrvaskr"
     prison_marker: [0, 0, 0]

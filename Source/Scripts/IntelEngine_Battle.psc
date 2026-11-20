@@ -1130,7 +1130,7 @@ Function PostBattleSoldierMoment(Actor survivor, Int alliesLeft, String victorNa
     EndIf
     survivor.SetActorValue("SpeedMult", 100.0)
     If !survivor.IsDead() && ExitMarkerA != None
-        SendSoldierOff(survivor, ExitMarkerA, !playerWon)
+        SendSoldierOff(survivor, WayOff(BattleFactionA, ExitMarkerA), !playerWon)
     EndIf
 EndFunction
 
@@ -1445,6 +1445,8 @@ Function DisperseSoldiers(Int winningSide, Bool findAlly)
     ExitMarkerA.SetPosition(cx + dx * ExitDistance, cy + dy * ExitDistance, z)
     ExitMarkerB = player.PlaceAtMe(xmarkerBase)
     ExitMarkerB.SetPosition(cx - dx * ExitDistance, cy - dy * ExitDistance, z)
+    ObjectReference wayA = WayOff(BattleFactionA, ExitMarkerA)
+    ObjectReference wayB = WayOff(BattleFactionB, ExitMarkerB)
 
     Int leavingA = 0
     Int leavingB = 0
@@ -1456,10 +1458,10 @@ Function DisperseSoldiers(Int winningSide, Bool findAlly)
             Bool sideB = soldier.IsInFaction(Intel_BattleSideB)
             Bool beaten = (winningSide == 1 && sideB) || (winningSide == 2 && !sideB)
             If sideB
-                SendSoldierOff(soldier, ExitMarkerB, beaten)
+                SendSoldierOff(soldier, wayB, beaten)
                 leavingB += 1
             Else
-                SendSoldierOff(soldier, ExitMarkerA, beaten)
+                SendSoldierOff(soldier, wayA, beaten)
                 leavingA += 1
                 If findAlly
                     Float distance = soldier.GetDistance(player)
@@ -1475,6 +1477,17 @@ Function DisperseSoldiers(Int winningSide, Bool findAlly)
     _alliesLeft = leavingA
     Core.DebugMsg("Battle: the field empties - " + leavingA + " soldiers leave one way, " + leavingB + " the other (" + \
         (Utility.GetCurrentRealTime() - began) + " s)")
+EndFunction
+
+ObjectReference Function WayOff(String factionId, ObjectReference exit)
+    {Where a side's soldiers walk after the battle: their faction's home_marker (the Companions: Jorrvaskr), else
+    the exit marker. They leave the world out of sight all the same (SweepSoldiers); only the direction differs.
+    Never stored in ExitMarkerA/B: ClearExitMarkers deletes those.}
+    ObjectReference home = IntelEngine.GetFactionHomeMarker(factionId)
+    If home
+        Return home
+    EndIf
+    Return exit
 EndFunction
 
 Function CalmSoldier(Actor soldier)

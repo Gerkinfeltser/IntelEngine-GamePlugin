@@ -5,6 +5,8 @@
 # soldier_template names the leveled list a faction's soldiers are raised from: by its name, or by form id
 # ("0x0001FC5B" for a record of Skyrim.esm, "MyMod.esp|0x000801" for a mod's).
 # A faction whose list is missing or yields nobody raises its first ally's soldiers; generic bandits come last.
+# home_marker (optional) names a reference, as a form id like soldier_template's, that the faction's soldiers walk
+# toward after a battle instead of away from the enemy. They still leave the world once out of sight.
 factions:
   - id: "ImperialFaction"
     name: "Imperial Legion"

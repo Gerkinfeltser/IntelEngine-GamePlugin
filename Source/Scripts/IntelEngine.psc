@@ -967,6 +967,9 @@ Actor Function FindFactionMember(String factionId) Global Native
 ; Get soldier template EditorID for a faction. Empty if not configured.
 String Function GetFactionSoldierTemplate(String factionId) Global Native
 
+; The reference a faction's home_marker names: where its soldiers walk after a battle. None if not set.
+ObjectReference Function GetFactionHomeMarker(String factionId) Global Native
+
 ; Spawn soldiers from a faction's template at the given reference.
 ; factionIdWithCount format: "FactionId:Count" (e.g., "StormcloakFaction:7")
 ; Falls back to generic bandit if template not found. Returns array of spawned Actors.
